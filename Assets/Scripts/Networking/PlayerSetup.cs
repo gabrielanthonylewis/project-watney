@@ -11,7 +11,7 @@ public class PlayerSetup : NetworkBehaviour
 
     private void Start()
     {
-        if (!NetworkClient.isConnected)
+        if (!NetworkClient.isConnected && !NetworkClient.active)
         {
             // Player is in singleplayer so spawn in all objects as server wont... 
             //todo: move this to its own script
