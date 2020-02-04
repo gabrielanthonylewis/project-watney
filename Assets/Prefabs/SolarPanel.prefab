@@ -353,7 +353,7 @@ MonoBehaviour:
   serverOnly: 0
   localPlayerAuthority: 1
   m_AssetId: 
-  m_SceneId: 2592543990
+  m_SceneId: 0
 --- !u!1001 &542324363935263293
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -361,47 +361,7 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 7378483858434990591}
     m_Modifications:
-    - target: {fileID: -927199367670048503, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_Name
-      value: solar panel
-      objectReference: {fileID: 0}
-    - target: {fileID: -927199367670048503, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
-      objectReference: {fileID: 0}
-    - target: {fileID: 7737798636094616681, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
-      objectReference: {fileID: 0}
-    - target: {fileID: 2502203975881118265, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
-      objectReference: {fileID: 0}
-    - target: {fileID: 4695666576454475813, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
-      objectReference: {fileID: 0}
-    - target: {fileID: 7469484624682501897, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
-      objectReference: {fileID: 0}
-    - target: {fileID: -492420421572216379, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
-      objectReference: {fileID: 0}
     - target: {fileID: -4425609515867240179, guid: cd063b41e86977c4a9dc942e5154f8d4,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
-      objectReference: {fileID: 0}
-    - target: {fileID: 7860441955838542192, guid: cd063b41e86977c4a9dc942e5154f8d4,
         type: 3}
       propertyPath: m_StaticEditorFlags
       value: 4294967295
@@ -466,6 +426,46 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[2]
       value: 
       objectReference: {fileID: 2100000, guid: 89eff4f0e2b27b04a8ed1dca652cdcb7, type: 2}
+    - target: {fileID: -927199367670048503, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_Name
+      value: solar panel
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: -492420421572216379, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502203975881118265, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 4695666576454475813, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 7469484624682501897, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 7737798636094616681, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 7860441955838542192, guid: cd063b41e86977c4a9dc942e5154f8d4,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd063b41e86977c4a9dc942e5154f8d4, type: 3}
 --- !u!4 &4826748208854008103 stripped
@@ -481,15 +481,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 7378483858434990591}
     m_Modifications:
-    - target: {fileID: 6217261415433266771, guid: 9ce63fb135054884d9eda6fccba9b198,
+    - target: {fileID: -96810847780823646, guid: 9ce63fb135054884d9eda6fccba9b198,
         type: 3}
-      propertyPath: m_Name
-      value: IOSocketOutput
-      objectReference: {fileID: 0}
-    - target: {fileID: 6217261415433266771, guid: 9ce63fb135054884d9eda6fccba9b198,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967295
+      propertyPath: m_AssetId
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6217261415433266770, guid: 9ce63fb135054884d9eda6fccba9b198,
         type: 3}
@@ -546,10 +541,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -96810847780823646, guid: 9ce63fb135054884d9eda6fccba9b198,
+    - target: {fileID: 6217261415433266771, guid: 9ce63fb135054884d9eda6fccba9b198,
         type: 3}
-      propertyPath: m_AssetId
-      value: 
+      propertyPath: m_Name
+      value: IOSocketOutput
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217261415433266771, guid: 9ce63fb135054884d9eda6fccba9b198,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 6217261415433266772, guid: 9ce63fb135054884d9eda6fccba9b198,
         type: 3}
