@@ -1,95 +1,47 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-[RequireComponent(typeof(MeshFilter))]
+[RequireComponent(typeof(MeshRenderer))]
 public class TerrainGenerator : MonoBehaviour
 {
     [SerializeField]
     private Texture2D heightmap = null;
 
-    private Mesh mesh = null;
-    private Vector3[] vertices;
-    private int[] triangles;
-
-    private int xSize; // how many quads not verts
-    private int zSize;
-
     public int terrainHeightMulti = 50;
+
+    private TerrainMesh terrain;
 
     void Start()
     {
-        this.mesh = new Mesh();
-        this.GetComponent<MeshFilter>().mesh = this.mesh;
-        this.GetComponent<MeshFilter>().sharedMesh = this.mesh;
+        this.GenerateHeightMapTerrain();
+    }
 
-        if(this.GetComponent<MeshCollider>())
-            this.GetComponent<MeshCollider>().sharedMesh = this.mesh;
+    private void GenerateHeightMapTerrain()
+    {
+        int xQuadCount = this.heightmap.width - 1;
+        int zQuadCount = this.heightmap.height - 1;
+        this.terrain = new TerrainMesh(xQuadCount, zQuadCount,
+            this.gameObject.GetComponent<MeshFilter>() ? this.gameObject.GetComponent<MeshFilter>() : this.gameObject.AddComponent<MeshFilter>(),
+            this.gameObject.GetComponent<MeshCollider>() ? this.gameObject.GetComponent<MeshCollider>() : this.gameObject.AddComponent<MeshCollider>());
 
-        this.xSize = this.heightmap.width - 1;
-        this.zSize = this.heightmap.height - 1;
+        this.terrain.GenerateTerrain(this.heightmap, this.terrainHeightMulti);
+    }
 
-        this.GenerateTerrain();
-        this.UpdateMesh();
+    private void GenerateRandomTerrain(int xQuadCount, int zQuadCount)
+    {
+        this.terrain = new TerrainMesh(xQuadCount, zQuadCount,
+            this.gameObject.GetComponent<MeshFilter>() ? this.gameObject.GetComponent<MeshFilter>() : this.gameObject.AddComponent<MeshFilter>(),
+            this.gameObject.GetComponent<MeshCollider>() ? this.gameObject.GetComponent<MeshCollider>() : this.gameObject.AddComponent<MeshCollider>());
+
+        this.terrain.GenerateTerrain(0.3f, this.terrainHeightMulti);
     }
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            this.CalculateVertices();
-            this.UpdateMesh();
-        }
-    }
-
-    private void GenerateTerrain()
-    {
-        this.CalculateVertices();
-        this.CalculateTriangles();
-    }
-
-    private void CalculateVertices()
-    {
-        int vertexCount = (this.xSize + 1) * (this.zSize + 1);
-        this.vertices = new Vector3[vertexCount];
-
-        for (int i = 0, z = 0; z <= this.zSize; z++)
-        {
-            for (int x = 0; x <= this.xSize; x++, i++)
-            {
-                float y = this.heightmap.GetPixel(x, z).grayscale * this.terrainHeightMulti;
-                this.vertices[i] = new Vector3(x, y, z);
-            }
-        }
-    }
-
-    private void CalculateTriangles()
-    {
-        this.triangles = new int[this.xSize * this.zSize * 6];
- 
-        for (int z = 0, vert = 0, tris = 0; z < this.zSize; z++, vert++)
-        {
-            for (int x = 0; x < this.xSize; x++, vert++, tris += 6)
-            {
-                this.triangles[tris] = vert;
-                this.triangles[tris + 1] = vert + this.xSize + 1;
-                this.triangles[tris + 2] = vert + 1;
-                this.triangles[tris + 3] = vert + 1;
-                this.triangles[tris + 4] = vert + this.xSize + 1;
-                this.triangles[tris + 5] = vert + this.xSize + 2;
-            }
-        }
-    }
-
-    private void UpdateMesh()
-    {
-        this.mesh.Clear();
-
-        this.mesh.vertices = this.vertices;
-        this.mesh.triangles = this.triangles;
-
-        this.mesh.RecalculateBounds();
-        this.mesh.RecalculateNormals();
-        this.mesh.RecalculateTangents();
+        if(Input.GetKeyDown(KeyCode.I))
+            this.terrain.GenerateTerrain();
+        if (Input.GetKeyDown(KeyCode.O))
+            this.GenerateHeightMapTerrain();
+        if (Input.GetKeyDown(KeyCode.P))
+            this.GenerateRandomTerrain(20, 20);
     }
 }
