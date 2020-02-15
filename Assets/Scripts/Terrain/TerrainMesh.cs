@@ -7,7 +7,7 @@ public class TerrainMesh
     private MeshCollider meshCollider;
     private Vector3[] vertices;
     private int[] triangles;
-
+    private Vector3 position;
     private int xSize; // how many quads not verts
     private int zSize;
 
@@ -16,6 +16,8 @@ public class TerrainMesh
     {
         this.xSize = xQuadCount;
         this.zSize = zQuadCount;
+
+        this.position = position;
 
         int vertexCount = (this.xSize + 1) * (this.zSize + 1);
         this.vertices = new Vector3[vertexCount];
