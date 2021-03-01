@@ -40,7 +40,8 @@ public class SceneInitialisation : NetworkBehaviour
     [Command]
     private void CmdInitialiseDayNight()
     {
+        // todo: why do I need to pass the time here? can't it just use it in the function
         if (this._DayNightCycle != null)
-            this._DayNightCycle.RpcUpdateCurrentTime(this._DayNightCycle.GetNormalisedTime());
+            this._DayNightCycle.RpcSetInitialTime(this._DayNightCycle.GetInitialTime());
     }
 }

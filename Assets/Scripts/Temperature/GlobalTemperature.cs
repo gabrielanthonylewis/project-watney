@@ -1,20 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
 public class GlobalTemperature : MonoBehaviour
 {
-    private DayNightCycle _DayNightCycle = null;
+    [SerializeField] private TextMeshProUGUI temperatureText = null;
+    [SerializeField] private float minTemperature = -73.0f;
+    [SerializeField] private float maxTemperature = 20.0f;
 
-    [SerializeField]
-    private TextMeshProUGUI temperatureText = null;
-
+    private DayNightCycle dayNightCycle = null;
     private float currentTemperature;
 
-    private void Start()
+    private void Awake()
     {
-        this._DayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
+        this.dayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
     }
 
     public float GetTemperature()
@@ -22,24 +20,13 @@ public class GlobalTemperature : MonoBehaviour
         return this.currentTemperature;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if(this._DayNightCycle == null)
-            this._DayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
-        
-        if (this._DayNightCycle == null)
-            return;
+        // TODO: This looks weird, make it better
+        float totalDiff = Mathf.Abs(minTemperature) + Mathf.Abs(maxTemperature);
+        this.currentTemperature = ((totalDiff) / (1.0f / (this.dayNightCycle.GetExposure()))) - Mathf.Abs(minTemperature);
 
-        float currentExposure = this._DayNightCycle.GetExposure();
-
-        float minTemp = -73;
-        float maxTemp = 20;
-
-        float totalDiff = Mathf.Abs(minTemp) + Mathf.Abs(maxTemp); // 93
-        this.currentTemperature = ((totalDiff) / (1.0f / (currentExposure))) - Mathf.Abs(minTemp);
-
-        if(temperatureText != null)
+        if(this.temperatureText != null)
             this.temperatureText.SetText("{0}\u00B0C", this.currentTemperature);
     }
 }

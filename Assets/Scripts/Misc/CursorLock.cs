@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CursorLock : MonoBehaviour
 {
-    void Start()
+    [SerializeField] CursorLockMode cursorLockMode = CursorLockMode.Locked;
+
+    private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.lockState = this.cursorLockMode;
     }
 }

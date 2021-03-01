@@ -4,39 +4,25 @@ using Mirror;
 
 public class PoweredUnit: NetworkBehaviour
 {
-    [SerializeField]
-    private float currentPower; // Watts that are currently stored.
+    [SerializeField] protected float currentPower; // Watts that are currently stored.
     public float CurrentPower { get { return this.currentPower; } private set { this.currentPower = value; } }
 
-    [SerializeField]
-    private float maximumCapacity; // Max Watts that can be stored.
+    [SerializeField] private float maximumCapacity; // Max Watts that can be stored.
     public float MaximumCapacity { get { return this.maximumCapacity; } private set { this.maximumCapacity = value; } }
 
-    [SerializeField]
-    private float chargeRate; // Rate at which Watts are gained per second.
+    [SerializeField] private float chargeRate; // Rate at which Watts are gained per second.
     public float ChargeRate { get { return this.chargeRate; } private set { this.chargeRate = value; } }
 
-    [SerializeField]
-    private float transferRate; // Rate at which Watts are transfered from the power source to a battery.
+    [SerializeField] private float transferRate; // Rate at which Watts are transfered from the power source to a battery.
     public float TransferRate { get { return this.transferRate; } private set { this.transferRate = value; } }
 
-    [SerializeField]
-    private TextMeshProUGUI percentageText = null;
+    [SerializeField] private TextMeshProUGUI percentageText = null;
+    [SerializeField] private bool canCharge = true;
 
-    [HideInInspector]
-    public bool hasPower { get; private set; }
-
-    public bool canCharge = true;
-
-    protected PoweredUnit()
-    {
-        this.hasPower = (this.currentPower > 0.0f);
-    }
-
-    public void ShouldDischarge()
-    {
-        this.canCharge = false;
-    }
+    public virtual void AddInput(PoweredUnit input) { }
+    public virtual void RemoveInput(PoweredUnit input) { }
+    public virtual void AddOutput(PoweredUnit input) { }
+    public virtual void RemoveOutput(PoweredUnit input) { }
 
     [ClientRpc]
     public void RpcInitialiseCurrentPower(float power)
@@ -44,16 +30,6 @@ public class PoweredUnit: NetworkBehaviour
         this.currentPower = power;
         this.UpdateText();
     }
-
-    public void CanCharge()
-    {
-        this.canCharge = true;
-    }
-
-    public virtual void AddInput(PoweredUnit input) { }
-    public virtual void RemoveInput(PoweredUnit input) { }
-    public virtual void AddOutput(PoweredUnit input) { }
-    public virtual void RemoveOutput(PoweredUnit input) { }
 
     /**
      * Increases the current power using the charge rate.
@@ -85,15 +61,8 @@ public class PoweredUnit: NetworkBehaviour
         }
 
         this.UpdateText();
-        this.hasPower = (this.currentPower > 0.0f);
 
         return additionalPower;
-    }
-
-    private void UpdateText()
-    {
-        if (percentageText != null)
-            this.percentageText.SetText((this.currentPower / this.MaximumCapacity * 100.0f).ToString("F2") + "%");
     }
 
     public float TransferPowerUpdate(float dt)
@@ -114,8 +83,13 @@ public class PoweredUnit: NetworkBehaviour
         }
 
         this.UpdateText();
-        this.hasPower = (this.currentPower > 0.0f);
 
         return subtractedPower;
+    }
+
+    private void UpdateText()
+    {
+        if(this.percentageText != null)
+            this.percentageText.SetText((this.currentPower / this.MaximumCapacity * 100.0f).ToString("F2") + "%");
     }
 }

@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 744a89c11e9ccdc4a9b631073ef9ba63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  connectionA: {fileID: 3459718260421163859}
-  connectionB: {fileID: 3459718259330689971}
+  cableEndA: {fileID: 3459718260421163859}
+  cableEndB: {fileID: 3459718259330689971}
 --- !u!1 &4541176713847084901
 GameObject:
   m_ObjectHideFlags: 0
@@ -108,6 +108,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -132,6 +133,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &4541176713847084900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,6 +179,7 @@ SpringJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4541176713847084901}
   m_ConnectedBody: {fileID: 4541176714904127384}
+  m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 0
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
@@ -294,6 +297,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -318,6 +322,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!54 &4541176714904127384
 Rigidbody:
   m_ObjectHideFlags: 0

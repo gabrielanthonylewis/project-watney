@@ -68,7 +68,7 @@ public class PlayerLook : NetworkBehaviour
     private Vector3 targetThirdPersonPlayerAngles;
 
     [SerializeField]
-    private CollisionHandler collision = new CollisionHandler();
+    private CameraCollisionDetection collision = new CameraCollisionDetection();
 
     private float adjustmentDistance = -8.0f; // Camera distance will change if there is a collision.
 

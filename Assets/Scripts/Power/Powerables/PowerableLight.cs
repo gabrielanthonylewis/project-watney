@@ -1,24 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+[RequireComponent(typeof(Light))]
 public class PowerableLight : Powerable
 {
-    private Light _light;
+    private new Light light;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        this._light = this.GetComponent<Light>();    
+        this.light = this.GetComponent<Light>();    
     }
 
     public override void TurnOn()
     {
-        this._light.enabled = true;
+        this.light.enabled = true;
     }
 
     public override void TurnOff()
     {
-        this._light.enabled = false;
+        this.light.enabled = false;
     }
 }

@@ -1,31 +1,18 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using Mirror;
 
 public class PowerSupplyUnit : PoweredUnit
 {
-    [SerializeField]
-    private bool acceptPower = true;
+    [SerializeField] private List<PoweredUnit> inputs = new List<PoweredUnit>();
+    [SerializeField] private PowerGrid[] powerGrids;
 
-    [SerializeField]
-    private List<PoweredUnit> inputs = new List<PoweredUnit>();
-
-    [SerializeField]
-    private PowerGrid[] powerGrids;
-
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.U))
-            this.acceptPower = !this.acceptPower;
+        foreach(PoweredUnit unit in this.inputs)
+            this.Charge(unit.TransferPowerUpdate(Time.deltaTime));
 
-        if(this.acceptPower)
-        {
-            foreach (PoweredUnit unit in this.inputs)
-                this.Charge(unit.TransferPowerUpdate(Time.deltaTime));
-        }
-
-        if(this.CurrentPower > 0.0f)
+        // If unit has power then the power grid can be turned on.
+        if(this.currentPower > 0.0f)
         {
             foreach(PowerGrid grid in this.powerGrids)
                 grid.TurnOn();
@@ -34,7 +21,7 @@ public class PowerSupplyUnit : PoweredUnit
         }
         else
         {
-            foreach (PowerGrid grid in this.powerGrids)
+            foreach(PowerGrid grid in this.powerGrids)
                 grid.TurnOff();
         }
     }

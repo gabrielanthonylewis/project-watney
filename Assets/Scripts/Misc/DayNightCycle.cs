@@ -1,133 +1,139 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 using Mirror;
 using UnityEngine.Rendering.HighDefinition;
 
+[RequireComponent(typeof(Light))]
 public class DayNightCycle : NetworkBehaviour
 {
+    [SerializeField][Range(0, 1)] private float durationMultiplier = 0.1f;
+    [SerializeField][Range(0, 1)] private float timeOfDay = 0.5f;
+    [SerializeField][Range(0, 1)] private float sunrise = 0.2f;
+    [SerializeField][Range(0, 1)] private float sunset = 0.8f;
+    [SerializeField] private float directionalLightIntensity = 20.0f;
+    [SerializeField] private float debugExposure;
+    [SerializeField] private Volume skyboxVolume;
+
+    // A martian day is approx 24 hours, 39 minutes and 35 seconds
+    private readonly float MARS_DURATION = 88775;
+
+    private float secondsDelta;
+    private float exposure;
     private Material initialSkyBoxMat;
-    private Material newSkyBoxMat;
-
-    private readonly float dayLengthMinutes = 1477;
-
-    private float secondFraction;
-    private float exposureNormalised;
-
-    [SerializeField]
-    private float secondMultiplier = 1.0f;
-
-    [SerializeField]
-    [Range(0, 1)]
-    private float timeOfDayNormalised = 0.5f;
-
-    [SerializeField]
-    [Range(0, 1)]
-    private float normalisedSunrise = 0.2f;
-
-    [SerializeField]
-    [Range(0,1)]
-    private float normaliseSunset = 0.8f;
-
-    [SerializeField]
     private Light directionalLight = null;
-
-    [SerializeField]
-    private float debugExposure;
-
-    [SerializeField]
-    private float debugRotX;
-
-    [SerializeField]
-    private Volume _skyboxVolume;
+    private float initialT;
+    private float dayLength;
 
     private void Start()
     {
+        this.directionalLight = this.GetComponent<Light>();
+
+        /* Skybox settings are saved in the editor for some reason,
+         * so we need to save and then restore them when exiting. */
         this.initialSkyBoxMat = RenderSettings.skybox;
-        //this.newSkyBoxMat = new Material(this.initialSkyBoxMat);
-       // RenderSettings.skybox = this.newSkyBoxMat;
 
-        float secondsInDay = this.dayLengthMinutes * 60.0f;
-        this.secondFraction = (1.0f / secondsInDay) * this.secondMultiplier;
+        this.dayLength = (this.sunset - this.sunrise); 
+
+        this.secondsDelta = this.MARS_DURATION * this.durationMultiplier;
+        this.initialT = this.timeOfDay * secondsDelta;
     }
 
-    [ClientRpc]
-    public void RpcUpdateCurrentTime(float time)
+    private void Update()
     {
-        this.timeOfDayNormalised = time;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        this.timeOfDayNormalised = Mathf.Clamp(this.timeOfDayNormalised + this.secondFraction * Time.deltaTime, 0, 1);
-
-        // change exposure
-        if (this.timeOfDayNormalised == 1.0f)
-            this.timeOfDayNormalised = 0.0f;
-
+        // Repeat the day night cycle [0, 1]
+        this.timeOfDay = Mathf.Repeat((initialT + Time.time) / secondsDelta, 1.0f);
 
         this.UpdateExposure();
-        this.UpdateLightRotation(this.exposureNormalised);
-        this.UpdateLightIntensity(this.exposureNormalised);
-    }
-
-    public float GetNormalisedTime()
-    {
-        return this.timeOfDayNormalised;
-    }
-
-    public float GetExposure()
-    {
-        return this.exposureNormalised;
+        this.UpdateLightRotation();
+        this.UpdateLightIntensity();
     }
 
     private void UpdateExposure()
     {
-        float exposureNormalised = 0.0f;
+        bool isDay = (this.timeOfDay >= this.sunrise && this.timeOfDay <= this.sunset);
+        const float MAX_EXPOSURE = 1.0f;
+        const float MIN_EXPOSURE = 0.0f;
 
-        if (this.timeOfDayNormalised >= this.normalisedSunrise && this.timeOfDayNormalised <= 0.5f)
-            exposureNormalised = (this.timeOfDayNormalised - this.normalisedSunrise) / (0.5f - this.normalisedSunrise);
-
-        if (this.timeOfDayNormalised > 0.5f && this.timeOfDayNormalised <= this.normaliseSunset)
-            exposureNormalised = (1.0f - (this.timeOfDayNormalised - 0.5f) / (this.normaliseSunset - 0.5f));
-
-        debugExposure = exposureNormalised;
-        this.exposureNormalised = exposureNormalised;
-
-        // if(this.newSkyBoxMat != null)
-        //    this.newSkyBoxMat.SetFloat("_Exposure", this.exposureNormalised);
-        HDRISky tmp;
-        if(this._skyboxVolume.profile.TryGet<HDRISky>(out tmp))
+        if(isDay)
         {
-            FloatParameter newval = new FloatParameter(exposureNormalised);
-            tmp.desiredLuxValue.SetValue(newval);
+            // Where we are in this day.
+            float dayNormalised = (this.timeOfDay - this.sunrise) / this.dayLength; 
+
+            /* Like a triangle, the heighest point is in the middle of the day.
+             * This isn't realistic but works well enough for the prototype. */
+            if(dayNormalised <= 0.5f)
+                this.exposure = Mathf.Lerp(MIN_EXPOSURE, MAX_EXPOSURE, dayNormalised * 2.0f);
+            else
+                this.exposure = Mathf.Lerp(MAX_EXPOSURE, MIN_EXPOSURE, (dayNormalised - 0.5f) * 2.0f);
+        }
+        else
+        {
+            this.exposure = MIN_EXPOSURE;
+        }
+
+        debugExposure = this.exposure;
+
+        // Update skybox exposure.
+        HDRISky hdriSky;
+        if(this.skyboxVolume.profile.TryGet<HDRISky>(out hdriSky))
+        {
+            hdriSky.desiredLuxValue.SetValue(new FloatParameter(this.exposure));
+            DynamicGI.UpdateEnvironment();
         }
     }
 
-    private void UpdateLightRotation(float exposureNormalised)
+    private void UpdateLightRotation()
     {
-        float newX = 0.0f;
-        if (this.timeOfDayNormalised >= this.normalisedSunrise && this.timeOfDayNormalised <= 0.5f)
-            newX = -12.5f + exposureNormalised * (90.0f + 12.5f);
+        bool isDay = (this.timeOfDay >= this.sunrise && this.timeOfDay <= this.sunset);
 
-        if (this.timeOfDayNormalised > 0.5f && this.timeOfDayNormalised <= this.normaliseSunset)
-            newX = 90.0f + (1.0f - exposureNormalised) * (173.0f - 90.0f);
+        Vector3 angles = new Vector3(this.directionalLight.transform.rotation.x,
+            this.directionalLight.transform.rotation.y, this.directionalLight.transform.rotation.z);
 
-        debugRotX = newX;
-        this.directionalLight.transform.localRotation = Quaternion.Euler(newX, 0.0f, 0.0f);
+        if(isDay)
+        {
+            float dayNormalised = (this.timeOfDay - this.sunrise) / this.dayLength;
+            angles.x = Mathf.Lerp(0.0f, 180.0f, dayNormalised);
+        }   
+        else
+        {
+            // Night may be [0.8, 1.0] + [0.0, 0.2] so will have to do some ugly maths.
+            float nightNormalised = 0.0f;
+            if(this.timeOfDay >= this.sunset)
+                nightNormalised = this.timeOfDay - this.sunset;
+            else if(this.timeOfDay <= this.sunrise)
+                nightNormalised = (1.0f - this.sunset) + this.timeOfDay;
+            nightNormalised /= ((1.0f - this.sunset) + this.sunrise);
+
+            angles.x = Mathf.Lerp(180.0f, 360.0f, nightNormalised);
+        }
+
+        this.directionalLight.transform.rotation = Quaternion.Euler(angles);
     }
 
-    private void UpdateLightIntensity(float exposureNormalised)
+    private void UpdateLightIntensity()
     {
-        float maxIntensity = 10.0f;
-
-        this.directionalLight.intensity = exposureNormalised * maxIntensity;
+        this.directionalLight.intensity = this.exposure * this.directionalLightIntensity;
     }
 
-    void OnApplicationQuit()
+    [ClientRpc]
+    public void RpcSetInitialTime(float initialTime)
+    {
+        this.initialT = initialTime;
+    }
+
+    public float GetInitialTime()
+    {
+        return this.initialT;
+    }
+
+    public float GetExposure()
+    {
+        return this.exposure;
+    }
+
+    private void OnDisable()
     {
         RenderSettings.skybox = this.initialSkyBoxMat;
+        DynamicGI.UpdateEnvironment();
     }
 }

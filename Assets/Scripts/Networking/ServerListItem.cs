@@ -1,20 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
 public class ServerListItem : MonoBehaviour
 {
-    [SerializeField]
-    private TextMeshProUGUI nameText = null, ipAddressText = null,  portText = null;
-
-    [SerializeField]
-    private RawImage connectivityImage = null;
-
-    [SerializeField]
-    private Color connectedColour, disconnectedColour;
-
+    [SerializeField] private TextMeshProUGUI nameText = null, ipAddressText = null,  portText = null;
+    [SerializeField] private RawImage connectivityImage = null;
+    [SerializeField] private Color connectedColour, disconnectedColour;
 
     public bool isConnected { private set; get; }
     private ServerList owner = null;
@@ -24,6 +16,7 @@ public class ServerListItem : MonoBehaviour
         this.GetComponent<Toggle>().group = this.transform.parent.GetComponent<ToggleGroup>();
     }
 
+    // TODO: I'm pretty sure this isn't being used, can remove..
     public ServerListItem(ServerList owner, ServerDetails serverDetails)
     {
         this.Initialise(owner, serverDetails);

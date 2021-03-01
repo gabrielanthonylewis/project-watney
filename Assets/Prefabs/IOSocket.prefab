@@ -58,6 +58,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da2982fcc4d6d584f9b50ffd70cfdd5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   controllerUnit: {fileID: 0}
   socketType: 0
   insertedCable: {fileID: 0}
@@ -76,4 +78,4 @@ MonoBehaviour:
   serverOnly: 0
   localPlayerAuthority: 1
   m_AssetId: 
-  m_SceneId: 3520702077
+  m_SceneId: 0

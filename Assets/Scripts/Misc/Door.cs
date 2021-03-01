@@ -15,6 +15,18 @@ public class Door : NetworkBehaviour
     [SerializeField]
     private Animator _Animator = null;
 
+    [SerializeField]
+    private Material lockedMaterial, closedMaterial, openMaterial;
+
+    [SerializeField]
+    private MeshRenderer displayRenderer = null;
+
+    // TODO: Why isn't updatedisplay working??
+    private void Start()
+    {
+        this.UpdateDisplay();
+    }
+
     public void Interact()
     {
         if (isUnlocked == false)
@@ -34,6 +46,7 @@ public class Door : NetworkBehaviour
     private void ChangeLockState(bool state)
     {
         this.isUnlocked = state;
+        this.UpdateDisplay();
     }
 
     [ClientRpc]
@@ -54,6 +67,21 @@ public class Door : NetworkBehaviour
     {
         this.isOpen = state;
         this._Animator.SetBool("isOpen", state);
+        this.UpdateDisplay();
+    }
+
+    private void UpdateDisplay()
+    {
+        Material[] displayMaterials = this.displayRenderer.materials;
+
+        displayMaterials[1] = (this.isUnlocked) ? this.openMaterial : this.lockedMaterial;
+        /*if(this.isUnlocked == false)
+            displayMaterials[1] = this.lockedMaterial;
+        else
+            displayMaterials[1] = (this.isOpen) ? this.openMaterial : this.closedMaterial;
+*/
+
+        this.displayRenderer.materials = displayMaterials;
     }
 
     [ClientRpc]

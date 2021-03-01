@@ -1,87 +1,70 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Cable : MonoBehaviour
 {
-    [SerializeField]
-    private MoveableCableEnd connectionA = null;
-
-    [SerializeField]
-    private MoveableCableEnd connectionB = null;
+    [SerializeField] private MoveableCableEnd cableEndA = null;
+    [SerializeField] private MoveableCableEnd cableEndB = null;
 
     private void Start()
     {
-        if (this.connectionA != null)
-        {
-            this.connectionA.AddConnectionMadeCallback(this.ConnectionMade);
-            this.connectionA.AddConnectionRemovedCallback(this.ConnectionRemoved);
-        }
-
-        if (this.connectionB != null)
-        {
-            this.connectionB.AddConnectionMadeCallback(this.ConnectionMade);
-            this.connectionB.AddConnectionRemovedCallback(this.ConnectionRemoved);
-        }
+        this.InitialiseCableEnd(this.cableEndA);
+        this.InitialiseCableEnd(this.cableEndB);
     }
 
-    private void ConnectionMade()
+    private void InitialiseCableEnd(MoveableCableEnd cableEnd)
     {
-        if(this.connectionA.HasConnection() &&
-            this.connectionB.HasConnection())
-        {
-            // Find end that is connected to input, if other end connected to output then add input to connection
-            if(this.connectionA.GetConnectedSocket() != null)
-            {
-                if (this.connectionA.GetConnectedSocket().GetSocketType() == IOSocket.SocketType.Input)
-                {
-                    if (this.connectionB.GetConnectedSocket().GetSocketType() == IOSocket.SocketType.Output)
-                    {
-                        this.connectionA.GetConnection().AddInput(this.connectionB.GetConnection());
-                    }
-                }
-
-                if (this.connectionB.GetConnectedSocket().GetSocketType() == IOSocket.SocketType.Input)
-                {
-                    if (this.connectionA.GetConnectedSocket().GetSocketType() == IOSocket.SocketType.Output)
-                    {
-                        this.connectionB.GetConnection().AddInput(this.connectionA.GetConnection());
-                    }
-                }
-            }
-        }
+        cableEnd.AddConnectionMadeCallback(this.OnConnectionMade);
+        cableEnd.AddConnectionRemovedCallback(this.OnConnectionRemoved);
     }
 
-    private void ConnectionRemoved(PoweredUnit removedConnection, IOSocket removedSocket)
+    /* On a full connection energy the inputs are hooked up so that
+     * the energy can be transfered from one device to another. */
+    private void OnConnectionMade()
     {
-        if(removedSocket.GetSocketType() == IOSocket.SocketType.Input)
+        bool hasFullConnection = this.cableEndA.HasConnection() && this.cableEndB.HasConnection(); 
+        if(!hasFullConnection)
+            return;
+  
+        IOSocket.SocketType cableEndASocket = this.cableEndA.GetConnectedSocket().GetSocketType();
+        IOSocket.SocketType cableEndBSocket = this.cableEndB.GetConnectedSocket().GetSocketType();
+
+        if(cableEndASocket == IOSocket.SocketType.Input &&
+            cableEndBSocket == IOSocket.SocketType.Output)
         {
-            // find which one is removed
-            if(!this.connectionA.HasConnection())
-            {
-                if(this.connectionB.HasConnection())
-                    removedConnection.RemoveInput(this.connectionB.GetConnection());
-            }
-            else if (!this.connectionB.HasConnection())
-            {
-                if (this.connectionA.HasConnection())
-                    removedConnection.RemoveInput(this.connectionA.GetConnection());
-            }
+            // In this case cableEndB is outputting its energy to to cableEndA's input socket.
+            this.cableEndA.GetConnection().AddInput(this.cableEndB.GetConnection());
         }
-        else if (removedSocket.GetSocketType() == IOSocket.SocketType.Output)
+
+        if(cableEndBSocket == IOSocket.SocketType.Input &&
+            cableEndASocket == IOSocket.SocketType.Output)
         {
-            // find which one is removed
-            if (!this.connectionA.HasConnection())
-            {
-                if (this.connectionB.HasConnection())
-                    this.connectionB.GetConnection().RemoveInput(removedConnection);
-            }
-            else if (!this.connectionB.HasConnection())
-            {
-                if (this.connectionA.HasConnection())
-                    this.connectionA.GetConnection().RemoveInput(removedConnection);
-            }
+            // In this case cableEndA is outputting its energy to to cableEndB's input socket.
+            this.cableEndB.GetConnection().AddInput(this.cableEndA.GetConnection());
         }
     }
 
+    // Disconnect the still connected device from the removed device.
+    private void OnConnectionRemoved(PoweredUnit removedConnection, IOSocket removedSocket)
+    {
+        switch(removedSocket.GetSocketType())
+        {
+            case IOSocket.SocketType.Input:
+
+                if(!this.cableEndA.HasConnection() && this.cableEndB.HasConnection())
+                    removedConnection.RemoveInput(this.cableEndB.GetConnection());
+                else if(!this.cableEndB.HasConnection() && this.cableEndA.HasConnection())
+                    removedConnection.RemoveInput(this.cableEndA.GetConnection());
+
+                break;
+
+            case IOSocket.SocketType.Output:
+
+                if(!this.cableEndA.HasConnection() && this.cableEndB.HasConnection())
+                    this.cableEndB.GetConnection().RemoveInput(removedConnection);
+                else if(!this.cableEndB.HasConnection() && this.cableEndA.HasConnection())
+                    this.cableEndA.GetConnection().RemoveInput(removedConnection);
+
+                break;
+        }
+    }
 }

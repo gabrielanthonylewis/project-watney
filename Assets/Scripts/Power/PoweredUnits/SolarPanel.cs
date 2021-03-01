@@ -1,26 +1,19 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SolarPanel : PoweredUnit
 {
-    [SerializeField]
-    private DayNightCycle _DayNightCycle = null;
+    [SerializeField] private DayNightCycle dayNightCycle = null;
 
     private void Start()
     {
-        if(_DayNightCycle == null)
-            this._DayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
+        if(this.dayNightCycle == null)
+            this.dayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        float currentExposure = this._DayNightCycle.GetExposure();
-
-        if (currentExposure <= 0)
-            return;
-
-        this.ChargeUpdate(Time.deltaTime * currentExposure);
+        float currentExposure = this.dayNightCycle.GetExposure();
+        if(currentExposure > 0)
+            this.ChargeUpdate(Time.deltaTime * currentExposure);
     }
 }

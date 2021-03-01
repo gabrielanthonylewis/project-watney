@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
-public class CollisionHandler
+public class CameraCollisionDetection
 {
     public LayerMask collisionLayer; // objects that the camera can collide with
 
