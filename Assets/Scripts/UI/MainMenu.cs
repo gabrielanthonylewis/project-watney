@@ -1,65 +1,27 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Mirror;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using Mirror;
 
 public class MainMenu : MonoBehaviour
 {
-    [System.Serializable]
-    public enum Screen
+    private enum Screen
     {
         Main = 0,
         Multiplayer = 1,
         EditServerDetails = 2
     }
 
-    [SerializeField]
-    private GameObject mainScreen = null;
-
-    [SerializeField]
-    private GameObject multiplayerScreen = null;
-
-    [SerializeField]
-    private GameObject editServerDetailsScreen = null;
+    [SerializeField] private GameObject mainScreen = null;
+    [SerializeField] private GameObject multiplayerScreen = null;
+    [SerializeField] private GameObject editServerDetailsScreen = null;
+    [SerializeField] private int loadingScreenIndex = 2;
+    [SerializeField] private NetworkManager networkManager;
 
     private Screen currentScreen = Screen.Main;
 
-    [SerializeField]
-    private int mainSceneIndex = 1;
-
-    [SerializeField]
-    private int loadingScreenIndex = 2;
-
-    [SerializeField]
-    private CustomNetworkManager _NetworkManager;
-
-    bool hasJoined = false;
-
-    public void LoadMainScene()
-    {
-        SceneManager.LoadScene(this.loadingScreenIndex);
-    }
-
-    public void HostGame()
-    {
-        if (Application.platform != RuntimePlatform.WebGLPlayer)
-            this._NetworkManager.StartHost();
-
-        this.LoadMainScene();
-    }
-
-    public void ChangeScreen(int newScreen)
-    {
-        this.SetScreenActive(this.currentScreen, false);
-        this.SetScreenActive((Screen)newScreen, true);
-
-        this.currentScreen = (Screen)newScreen;
-    }
-
     private void SetScreenActive(Screen screen, bool state)
     {
-        switch (screen)
+        switch(screen)
         {
             case Screen.Main:
                 this.mainScreen.SetActive(state);
@@ -75,7 +37,30 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    public void ExitButtonPressed()
+    public void ChangeScreen(int screenIdx)
+    {
+        Screen newScreen = (Screen)screenIdx;
+
+        this.SetScreenActive(this.currentScreen, false);
+        this.SetScreenActive(newScreen, true);
+
+        this.currentScreen = newScreen;
+    }
+
+    public void LoadMainScene()
+    {
+        SceneManager.LoadScene(this.loadingScreenIndex);
+    }
+
+    public void HostGame()
+    {
+        if (Application.platform != RuntimePlatform.WebGLPlayer)
+            this.networkManager.StartHost();
+
+        this.LoadMainScene();
+    }    
+
+    public void OnExitButtonPressed()
     {
         #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

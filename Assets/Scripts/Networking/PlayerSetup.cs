@@ -3,11 +3,8 @@ using Mirror;
 
 public class PlayerSetup : NetworkBehaviour
 {
-    [SerializeField]
-    private Behaviour[] componentsToDisable;
-
-    [SerializeField]
-    private GameObject[] objectsToDisable;
+    [SerializeField] private Behaviour[] componentsToDisable;
+    [SerializeField] private GameObject[] objectsToDisable;
 
     private void Start()
     {
@@ -35,18 +32,7 @@ public class PlayerSetup : NetworkBehaviour
         }
 
         if (!this.isServer)
-        {
             this.CmdSendName("Player" + this.netId.ToString());
-        }
-
-        this.InitialiseGameState();
-    }
-
-    private void InitialiseGameState()
-    {
-        // We are the server and client joined so send initial sync.
-        if (GameObject.FindObjectOfType<SceneInitialisation>() != null)
-            GameObject.FindObjectOfType<SceneInitialisation>().InitialisSceneState();
     }
 
     [Command]

@@ -23,8 +23,10 @@ public class DayNightCycle : NetworkBehaviour
     private Light directionalLight = null;
     private float initialT;
     private float dayLength;
+    private float initialTimeElapsed = 0.0f;
+    private float timeElapsed = 0.0f;
 
-    private void Start()
+    private void Awake()
     {
         this.directionalLight = this.GetComponent<Light>();
 
@@ -35,13 +37,14 @@ public class DayNightCycle : NetworkBehaviour
         this.dayLength = (this.sunset - this.sunrise); 
 
         this.secondsDelta = this.MARS_DURATION * this.durationMultiplier;
-        this.initialT = this.timeOfDay * secondsDelta;
+        this.initialT = this.timeOfDay * this.secondsDelta;
     }
 
     private void Update()
     {
         // Repeat the day night cycle [0, 1]
-        this.timeOfDay = Mathf.Repeat((initialT + Time.time) / secondsDelta, 1.0f);
+        this.timeElapsed += Time.deltaTime;
+        this.timeOfDay = Mathf.Repeat((initialT + (this.timeElapsed)) / secondsDelta, 1.0f);
 
         this.UpdateExposure();
         this.UpdateLightRotation();
@@ -115,15 +118,20 @@ public class DayNightCycle : NetworkBehaviour
         this.directionalLight.intensity = this.exposure * this.directionalLightIntensity;
     }
 
-    [ClientRpc]
-    public void RpcSetInitialTime(float initialTime)
+    public void SetInitialTimeElapsed(float time)
+    {
+        this.initialTimeElapsed = time;
+        this.timeElapsed = this.initialTimeElapsed;
+    }
+
+    public void SetInitialTime(float initialTime)
     {
         this.initialT = initialTime;
     }
 
-    public float GetInitialTime()
+    public float GenerateInitialTime()
     {
-        return this.initialT;
+        return this.timeOfDay * this.secondsDelta;
     }
 
     public float GetExposure()

@@ -491,18 +491,6 @@ MonoBehaviour:
   m_AreaLightEmissiveMeshShadowCastingMode: 0
   m_AreaLightEmissiveMeshMotionVectorGenerationMode: 0
   m_AreaLightEmissiveMeshLayer: -1
---- !u!114 &1384107083 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 672996038566020516, guid: a3bc556ea8221a94d8ebdb58fe9ac45f,
-    type: 3}
-  m_PrefabInstance: {fileID: 1789426143}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 247e8eed19a58ba41987fc419a8b6071, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1681090375
 GameObject:
   m_ObjectHideFlags: 0
@@ -708,6 +696,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2942126345706867934, guid: a3bc556ea8221a94d8ebdb58fe9ac45f,
+        type: 3}
+      propertyPath: m_SceneId
+      value: 3364479598
+      objectReference: {fileID: 0}
+    - target: {fileID: 3486528578389446476, guid: a3bc556ea8221a94d8ebdb58fe9ac45f,
+        type: 3}
+      propertyPath: m_SceneId
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8750081687281255825, guid: a3bc556ea8221a94d8ebdb58fe9ac45f,
         type: 3}
       propertyPath: m_RootOrder
@@ -770,6 +768,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a3bc556ea8221a94d8ebdb58fe9ac45f, type: 3}
+--- !u!114 &1789426144 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4596750190427524011, guid: a3bc556ea8221a94d8ebdb58fe9ac45f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1789426143}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 339185a1777ce8a4999f073641ffbe65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &263445931748216854
 GameObject:
   m_ObjectHideFlags: 0
@@ -1044,7 +1054,7 @@ PrefabInstance:
     - target: {fileID: 673869307, guid: d1fd75a340a7d294592972194b73f954, type: 3}
       propertyPath: _NetworkManager
       value: 
-      objectReference: {fileID: 1384107083}
+      objectReference: {fileID: 1789426144}
     - target: {fileID: 2540735861819924056, guid: d1fd75a340a7d294592972194b73f954,
         type: 3}
       propertyPath: m_Name
@@ -1157,9 +1167,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2540735861819924061, guid: d1fd75a340a7d294592972194b73f954,
         type: 3}
+      propertyPath: networkManager
+      value: 
+      objectReference: {fileID: 1789426144}
+    - target: {fileID: 2540735861819924061, guid: d1fd75a340a7d294592972194b73f954,
+        type: 3}
       propertyPath: _NetworkManager
       value: 
-      objectReference: {fileID: 1384107083}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d1fd75a340a7d294592972194b73f954, type: 3}
 --- !u!33 &2603769838223477161

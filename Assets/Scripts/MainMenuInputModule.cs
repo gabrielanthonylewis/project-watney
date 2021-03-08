@@ -3,12 +3,12 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.EventSystems;
 
-/// <summary>
-/// A BaseInputModule designed for mouse / keyboard / controller input.
-/// </summary>
-/// <remarks>
-/// Input module for working with, mouse, keyboard, or controller.
-/// </remarks>
+/**
+* This class is a copy of StandaloneInputModule with some slight tweeks:
+* 1. Keyboard input has been disabled.
+* 2. The user cannot deselect a server item, only switch between them.
+* This is very much a WIP and should be revisted. Anything unnecessary needs removing.
+*/
 public class MainMenuInputModule : PointerInputModule
     {
         private float m_PrevActionTime;

@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using Mirror;
+using TMPro;
 
 public class Door : NetworkBehaviour
 {
     [SerializeField]
     private bool isUnlocked = true;
     public bool IsUnlocked { get { return this.isUnlocked; } private set { this.isUnlocked = value; } }
-
 
     [SerializeField]
     private bool isOpen = false;
@@ -20,6 +20,9 @@ public class Door : NetworkBehaviour
 
     [SerializeField]
     private MeshRenderer displayRenderer = null;
+
+    [SerializeField] private TextMeshProUGUI displayText = null;
+
 
     // TODO: Why isn't updatedisplay working??
     private void Start()
@@ -84,13 +87,18 @@ public class Door : NetworkBehaviour
         this.displayRenderer.materials = displayMaterials;
     }
 
+    public void SetDisplayText(string text)
+    {
+        this.displayText.text = text;
+    }
+
     [ClientRpc]
     private void RpcChangeOpenState(bool state)
     {
         this.ChangeOpenState(state);
     }
 
-    [ClientRpc]
+    //[ClientRpc]
     public void RpcInitialiseOpenState(bool isOpen)
     {
         this.isOpen = isOpen;

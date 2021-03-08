@@ -2,11 +2,11 @@
     "serverList": [
         {
             "name": "gabriel computer",
-            "ipaddress": "25.39.220.61",
+            "ipaddress": "25.48.250.227",
             "port": "25565"
         },
         {
-            "name": "wouterisagod",
+            "name": "wouter",
             "ipaddress": "25.20.18.205",
             "port": "25565"
         },

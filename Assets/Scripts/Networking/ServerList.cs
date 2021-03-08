@@ -73,7 +73,7 @@ public class ServerList : MonoBehaviour
     private GameObject serverListItemPrefab = null;
 
     [SerializeField]
-    private CustomNetworkManager _NetworkManager;
+    private NetworkManager _NetworkManager;
 
     [SerializeField]
     private int mainSceneIndex = 1;

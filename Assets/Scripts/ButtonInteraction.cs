@@ -1,24 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Mirror;
+﻿using Mirror;
+using UnityEngine.Events;
 
 public class ButtonInteraction : NetworkBehaviour
 {
-    public delegate void ButtonPressedDelegate();
-    private ButtonPressedDelegate buttonPressedCallback;
+    private UnityEvent buttonPressedCallback = new UnityEvent();
 
-    public void AddButtonPressedCallback(ButtonPressedDelegate myCallback)
+    public void AddButtonPressedCallback(UnityAction callback)
     {
-        this.buttonPressedCallback += myCallback;
+        this.buttonPressedCallback.AddListener(callback);
     }
 
-    public void RemoveButtonPressedCallback(ButtonPressedDelegate myCallback)
+    public void RemoveButtonPressedCallback(UnityAction callback)
     {
-        this.buttonPressedCallback -= myCallback;
+        this.buttonPressedCallback.RemoveListener(callback);
     }
 
-    
     public void Interact()
     {
         if (NetworkClient.isConnected)
@@ -35,6 +31,7 @@ public class ButtonInteraction : NetworkBehaviour
 
     private void InvokeCallback()
     {
-        this.buttonPressedCallback?.Invoke();
+        if(this.buttonPressedCallback != null)
+            this.buttonPressedCallback.Invoke();
     }
 }

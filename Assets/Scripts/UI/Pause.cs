@@ -1,66 +1,51 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
 
 public class Pause : MonoBehaviour
 {
+    [SerializeField] private GameObject uiHolder = null;
+    [SerializeField] private int mainMenuSceneIndex = 0;
+
     private bool isPaused = false;
-
-    [SerializeField]
-    private GameObject uiHolder = null;
-
-    [SerializeField]
-    private int mainMenuSceneIndex = 0;
 
     private void Start()
     {
-        this.isPaused = false;
-        this.UpdatePauseState();
+        this.SetPausedState(false);
     }
 
     private void Update()
     {
         if(Input.GetButtonDown("Pause"))
-            this.TogglePause();
+            this.SetPausedState(!this.isPaused);
+    }
+
+    private void SetPausedState(bool isPaused)
+    {
+        this.isPaused = isPaused;
+
+        if(this.uiHolder != null)
+            this.uiHolder.SetActive(this.isPaused);
+
+        Cursor.lockState = (this.isPaused) ? CursorLockMode.Confined : CursorLockMode.Locked;
+
+        if(!NetworkClient.isConnected)
+            Time.timeScale = Convert.ToInt32(!this.isPaused);
     }
 
     public void MainMenuButton()
     {
-        if (NetworkClient.isConnected)
+        if(NetworkClient.isConnected)
             NetworkClient.Disconnect();
 
-        NetworkManager nm = GameObject.FindObjectOfType<NetworkManager>();
-        //nm.StopHost();
-     
-        if (nm != null)
-        {
-            //nm.StopServer();
-            //nm.StopClient();
-            Destroy(nm.gameObject);
-        }
+        NetworkManager networkManager = GameObject.FindObjectOfType<NetworkManager>();    
+        if(networkManager != null)
+            Destroy(networkManager.gameObject);
 
         this.isPaused = false;
         Time.timeScale = 1.0f;
 
         SceneManager.LoadScene(this.mainMenuSceneIndex);
-    }
-
-    private void TogglePause()
-    {
-        this.isPaused = !this.isPaused;
-        this.UpdatePauseState();
-    }
-
-    private void UpdatePauseState()
-    {
-        if (!NetworkClient.isConnected)
-            Time.timeScale = (this.isPaused) ? 0.0f : 1.0f;
-
-        Cursor.lockState = (this.isPaused) ? CursorLockMode.Confined : CursorLockMode.Locked;
-
-        if (this.uiHolder != null)
-            this.uiHolder.SetActive(this.isPaused);
     }
 }

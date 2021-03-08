@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
 
 public class Moveable : NetworkBehaviour
@@ -29,22 +27,6 @@ public class Moveable : NetworkBehaviour
     {
         this.pickedUpCallback -= myCallback;
     }
-
-    /*public void Follow(Transform obj, Vector3 offset, bool shouldFollowForward = false, bool usePhysics = false)
-    {
-        if (this._Rigidbody != null)
-        {
-            this._Rigidbody.velocity = Vector3.zero;
-            this._Rigidbody.isKinematic = !usePhysics;
-        }
-
-        this.usePhysics = usePhysics;
-        this.shouldFollowForward = shouldFollowForward;
-        this.offset = offset;
-        this.target = obj;
-
-        this.changeViewCallback.Invoke(obj);
-    }*/
 
     public void Follow(Transform targetObj, Vector3 offset, bool shouldFollowForward = false, bool usePhysics = false)
     {

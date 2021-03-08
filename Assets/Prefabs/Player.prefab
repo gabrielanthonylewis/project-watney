@@ -2805,16 +2805,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  currentHealth: 0
-  currentTemperature: 0
-  bodyTemperature: 37
+  maxOxygen: 100
+  oxygenLossDuration: 120
+  oxygenGainDuration: 10
+  oxygenDPS: 5
+  temperatureDPS: 5
+  temperatureLossMultiplier: 0.5
+  temperatureGainMultiplier: 10
+  temperatureLowerBound: -20
+  healthBarFill: {fileID: 2013758654}
   temperatureText: {fileID: 8444723215189451424}
   oxygenText: {fileID: 4823028250287504995}
-  healthBarFill: {fileID: 2013758654}
-  maxOxygen: 100
-  currentOxygen: 100
-  oxygenGainMultiplier: 2
-  oxygenLossMultiplier: 0.01
 --- !u!114 &6315057649207932022
 MonoBehaviour:
   m_ObjectHideFlags: 0

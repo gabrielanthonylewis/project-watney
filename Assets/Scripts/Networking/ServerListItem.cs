@@ -2,24 +2,20 @@
 using TMPro;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Toggle))]
 public class ServerListItem : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI nameText = null, ipAddressText = null,  portText = null;
     [SerializeField] private RawImage connectivityImage = null;
     [SerializeField] private Color connectedColour, disconnectedColour;
 
-    public bool isConnected { private set; get; }
+    private Toggle toggle;
     private ServerList owner = null;
 
     private void Start()
     {
-        this.GetComponent<Toggle>().group = this.transform.parent.GetComponent<ToggleGroup>();
-    }
-
-    // TODO: I'm pretty sure this isn't being used, can remove..
-    public ServerListItem(ServerList owner, ServerDetails serverDetails)
-    {
-        this.Initialise(owner, serverDetails);
+        this.toggle = this.GetComponent<Toggle>();
+        this.toggle.group = this.transform.parent.GetComponent<ToggleGroup>();
     }
 
     public void Initialise(ServerList owner, ServerDetails serverDetails)
@@ -38,7 +34,7 @@ public class ServerListItem : MonoBehaviour
 
     public void OnButtonPressed()
     {
-        this.owner.OnServerSelected(this.GetComponent<Toggle>().isOn ? this : null);
+        this.owner.OnServerSelected(this.toggle.isOn ? this : null);
     }
 
     private void SetName(string name)
@@ -58,8 +54,6 @@ public class ServerListItem : MonoBehaviour
 
     public void SetIsConnected(bool isConnected)
     {
-        this.isConnected = isConnected;
-
         this.connectivityImage.color = (isConnected) ? 
             this.connectedColour : this.disconnectedColour;
     }

@@ -3,30 +3,29 @@ using TMPro;
 
 public class GlobalTemperature : MonoBehaviour
 {
+    [SerializeField] private DayNightCycle dayNightCycle = null;
     [SerializeField] private TextMeshProUGUI temperatureText = null;
     [SerializeField] private float minTemperature = -73.0f;
     [SerializeField] private float maxTemperature = 20.0f;
 
-    private DayNightCycle dayNightCycle = null;
     private float currentTemperature;
-
-    private void Awake()
-    {
-        this.dayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
-    }
 
     public float GetTemperature()
     {
         return this.currentTemperature;
     }
 
+    public float GetMinTemperature()
+    {
+        return this.minTemperature;
+    }
+
     private void Update()
     {
-        // TODO: This looks weird, make it better
-        float totalDiff = Mathf.Abs(minTemperature) + Mathf.Abs(maxTemperature);
-        this.currentTemperature = ((totalDiff) / (1.0f / (this.dayNightCycle.GetExposure()))) - Mathf.Abs(minTemperature);
+        this.currentTemperature = Mathf.Lerp(minTemperature, maxTemperature, this.dayNightCycle.GetExposure());
 
+        // Make only 1 character, e.g. 1 degrees celsius
         if(this.temperatureText != null)
-            this.temperatureText.SetText("{0}\u00B0C", this.currentTemperature);
+            this.temperatureText.SetText("Outside: " + this.currentTemperature.ToString("F0") + "C");
     }
 }

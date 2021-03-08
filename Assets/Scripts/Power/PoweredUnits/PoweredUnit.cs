@@ -24,7 +24,7 @@ public class PoweredUnit: NetworkBehaviour
     public virtual void AddOutput(PoweredUnit input) { }
     public virtual void RemoveOutput(PoweredUnit input) { }
 
-    [ClientRpc]
+   // [ClientRpc]
     public void RpcInitialiseCurrentPower(float power)
     {
         this.currentPower = power;

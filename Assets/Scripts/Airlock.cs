@@ -1,86 +1,56 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Airlock : MonoBehaviour
 {
-    [SerializeField]
-    private Door innerDoor = null, outerDoor = null;
-
-    [SerializeField]
-    private ButtonInteraction insideButton = null, outsidebutton = null;
-
-    [SerializeField]
+    [SerializeField] private Door innerDoor = null, outerDoor = null;
+    [SerializeField] private ButtonInteraction insideButton = null, outsideButton = null;
+    [SerializeField] private float secondsToOpen = 3.0f;
+    
     private bool isInUse = false;
     
-    void Start()
+    private void Start()
     {
-        this.insideButton.AddButtonPressedCallback(this.OpenOutside);
-        this.outsidebutton.AddButtonPressedCallback(this.OpenInside);
-
-        // Close both doors if both are open.
-        if(!innerDoor.IsOpen && !outerDoor.IsOpen)
-        {
-            outerDoor.SetLockState(true);
-        }
-        if (innerDoor.IsOpen && outerDoor.IsOpen)
-        {
-            innerDoor.SetOpenState(false);
-            outerDoor.SetOpenState(false);
-            innerDoor.SetLockState(false);
-            outerDoor.SetLockState(true);
-        }
-        // Close opposite door and lock
-        else
-        {
-            if (innerDoor.IsOpen)
-            {
-                outerDoor.SetOpenState(false);
-                outerDoor.SetLockState(true);
-            }
-
-            if (outerDoor.IsOpen)
-            {
-                innerDoor.SetOpenState(false);
-                innerDoor.SetLockState(true);
-            }
-        }
+        this.insideButton.AddButtonPressedCallback(() =>
+            this.StartCoroutine(this.InitiateAirlockCoroutine(this.innerDoor)));
+        this.outsideButton.AddButtonPressedCallback(() =>
+            this.StartCoroutine(this.InitiateAirlockCoroutine(this.outerDoor)));
     }
 
     public bool IsPlayerInside()
     {
+        if(this.isInUse && !this.innerDoor.IsOpen && !this.outerDoor.IsOpen)
+            return true;
+
         return this.innerDoor.IsUnlocked;
     }
 
-    private void OpenOutside()
+    public IEnumerator InitiateAirlockCoroutine(Door doorToOpen)
     {
-        StartCoroutine(this.InitiateAirlock(this.outerDoor));
-    }
-
-    private void OpenInside()
-    {
-        StartCoroutine(this.InitiateAirlock(this.innerDoor));
-    }
-
-    public IEnumerator InitiateAirlock(Door doorToOpen)
-    {
-        if (this.isInUse)
+        if(this.isInUse)
             yield break;
 
         this.isInUse = true;
 
+        // Close and lock both doors.
         this.innerDoor.SetOpenState(false);
         this.outerDoor.SetOpenState(false);
         this.innerDoor.SetLockState(true);
         this.outerDoor.SetLockState(true);
 
-        yield return new WaitForSeconds(3.0f);
-
+        // Updates button text every second. e.g. 3, 2, 1
+        float currSecondsToOpen = this.secondsToOpen;
+        doorToOpen.SetDisplayText(currSecondsToOpen.ToString());
+        while(currSecondsToOpen > 0)
+        {
+            yield return new WaitForSeconds(1.0f);
+            currSecondsToOpen--;
+            doorToOpen.SetDisplayText((currSecondsToOpen > 0) ? currSecondsToOpen.ToString() : "");
+        }
+        
         doorToOpen.SetLockState(false);
         doorToOpen.SetOpenState(true);
 
         this.isInUse = false;
-
     }
-
 }

@@ -3,45 +3,46 @@ using Mirror;
 
 public class SceneInitialisation : NetworkBehaviour
 {
-    private DayNightCycle _DayNightCycle = null;
+    private DayNightCycle dayNightCycle = null;
 
     public void InitialisSceneState()
     {
-        if (this._DayNightCycle == null)
-            this._DayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
+        if(!this.isServer)
+            return;
 
-        if (NetworkClient.isConnected)
-            this.CmdInitialiseSceneState();
+        if(this.dayNightCycle == null)
+            this.dayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
+
+        this.RpcInitialiseDayNight();
+        this.RpcInitialisePoweredUnits();
+        this.RpcInitialiseDoors();
     }
 
-    public void CmdInitialiseSceneState()
-    {
-        this.CmdInitialiseDayNight();
-        this.CmdInitialisePoweredUnits();
-        this.CmdInitialiseDoors();
-    }
-
-    [Command]
-    public void CmdInitialiseDoors()
+    [ClientRpc]
+    private void RpcInitialiseDoors()
     {
         Door[] doors = GameObject.FindObjectsOfType<Door>();
-        foreach (Door door in doors)
+        foreach(Door door in doors)
             door.RpcInitialiseOpenState(door.IsOpen);
     }
 
-    [Command]
-    public void CmdInitialisePoweredUnits()
+    [ClientRpc]
+    private void RpcInitialisePoweredUnits()
     {
         PoweredUnit[] poweredUnits = GameObject.FindObjectsOfType<PoweredUnit>();
-        foreach (PoweredUnit poweredUnit in poweredUnits)
+        foreach(PoweredUnit poweredUnit in poweredUnits)
             poweredUnit.RpcInitialiseCurrentPower(poweredUnit.CurrentPower);
     }
 
-    [Command]
-    private void CmdInitialiseDayNight()
+    [ClientRpc]
+    private void RpcInitialiseDayNight()
     {
-        // todo: why do I need to pass the time here? can't it just use it in the function
-        if (this._DayNightCycle != null)
-            this._DayNightCycle.RpcSetInitialTime(this._DayNightCycle.GetInitialTime());
+        // Due to latency the Day Night cycle has a slight variance
+        // either method has this isse, I like the initialTime one rather than elapsed..
+        if(this.dayNightCycle != null)
+        {
+            //this.dayNightCycle.SetInitialTime(this.dayNightCycle.GenerateInitialTime());
+            this.dayNightCycle.SetInitialTimeElapsed(Time.time);
+        }
     }
 }
