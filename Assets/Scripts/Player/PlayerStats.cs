@@ -109,7 +109,7 @@ public class PlayerStats : MonoBehaviour
 
         this.isDead = (this.currentHealth <= 0.0f);
         if(this.isDead)
-            GameObject.FindObjectOfType<PlayerSpawnManager>().LocalPlayerDied();
+            GameObject.FindObjectOfType<PlayerSpawnManager>().OnLocalPlayerDied();
 
         if(this.healthBarFill != null)
             this.healthBarFill.fillAmount = (this.currentHealth / this.maxHealth);

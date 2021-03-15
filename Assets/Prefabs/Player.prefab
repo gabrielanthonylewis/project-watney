@@ -2596,6 +2596,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7027099751241640219}
   - component: {fileID: 7027099751241640218}
+  - component: {fileID: 6315057649207932022}
   - component: {fileID: 54249168}
   - component: {fileID: 54249169}
   - component: {fileID: 5623236269176124295}
@@ -2604,7 +2605,6 @@ GameObject:
   - component: {fileID: 935983389}
   - component: {fileID: 842303647}
   - component: {fileID: 1082192083}
-  - component: {fileID: 6315057649207932022}
   - component: {fileID: 1294222456}
   - component: {fileID: 4566755718540076779}
   - component: {fileID: 1862534136}
@@ -2650,6 +2650,30 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6315057649207932022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7027099751241640217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 602fefddcc6a4ee4aac83ba30ce8b2c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  componentsToDisable:
+  - {fileID: 7027099752323050545}
+  - {fileID: 809893300}
+  - {fileID: 935983389}
+  - {fileID: 842303647}
+  - {fileID: 1082192083}
+  - {fileID: 54249169}
+  objectsToDisable:
+  - {fileID: 1911679036}
+  - {fileID: 511033057}
 --- !u!114 &54249168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2684,7 +2708,7 @@ MonoBehaviour:
   collision:
     collisionLayer:
       serializedVersion: 2
-      m_Bits: 256
+      m_Bits: 769
     isColliding: 0
     adjustedCameraClipPoints: []
     desiredCameraClipPoints: []
@@ -2702,8 +2726,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e4f38cde77566c47bb999da7de4cd13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
   speedMultiplier: 3
   sprintMultiplier: 1.5
   sprintTimeToAccelerate: 0.25
@@ -2716,7 +2738,7 @@ MonoBehaviour:
   jumpHeight: 1
   crouchJumpHeight: 0.5
   stanimaFill: {fileID: 1900297054}
-  _Animator: {fileID: 516081086608761075}
+  animator: {fileID: 516081086608761075}
 --- !u!114 &5623236269176124295
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2816,29 +2838,6 @@ MonoBehaviour:
   healthBarFill: {fileID: 2013758654}
   temperatureText: {fileID: 8444723215189451424}
   oxygenText: {fileID: 4823028250287504995}
---- !u!114 &6315057649207932022
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7027099751241640217}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 602fefddcc6a4ee4aac83ba30ce8b2c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
-  componentsToDisable:
-  - {fileID: 7027099752323050545}
-  - {fileID: 809893300}
-  - {fileID: 935983389}
-  - {fileID: 842303647}
-  - {fileID: 1082192083}
-  objectsToDisable:
-  - {fileID: 1911679036}
-  - {fileID: 511033057}
 --- !u!114 &1294222456
 MonoBehaviour:
   m_ObjectHideFlags: 0

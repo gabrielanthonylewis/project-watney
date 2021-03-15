@@ -1,48 +1,45 @@
 ﻿using UnityEngine;
 using Mirror;
 
+// This class is for initialising the scene state on a newly connected client.
 public class SceneInitialisation : NetworkBehaviour
 {
     private DayNightCycle dayNightCycle = null;
 
-    public void InitialisSceneState()
+    public void InitialiseSceneState(NetworkConnection target)
     {
-        if(!this.isServer)
-            return;
-
-        if(this.dayNightCycle == null)
-            this.dayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
-
-        this.RpcInitialiseDayNight();
-        this.RpcInitialisePoweredUnits();
-        this.RpcInitialiseDoors();
+        if(this.isServer)
+        {
+            this.InitialiseDayNight();
+            this.InitialisePoweredUnits(target);
+            this.InitialiseDoors(target);
+        }
     }
 
-    [ClientRpc]
-    private void RpcInitialiseDoors()
+    private void InitialiseDoors(NetworkConnection target)
     {
         Door[] doors = GameObject.FindObjectsOfType<Door>();
         foreach(Door door in doors)
-            door.RpcInitialiseOpenState(door.IsOpen);
+            door.TargetInitialiseDoorState(target, door.IsOpen, door.IsUnlocked, door.IsBusy);
     }
 
-    [ClientRpc]
-    private void RpcInitialisePoweredUnits()
+    private void InitialisePoweredUnits(NetworkConnection target)
     {
         PoweredUnit[] poweredUnits = GameObject.FindObjectsOfType<PoweredUnit>();
         foreach(PoweredUnit poweredUnit in poweredUnits)
-            poweredUnit.RpcInitialiseCurrentPower(poweredUnit.CurrentPower);
+            poweredUnit.TargetInitialiseCurrentPower(target, poweredUnit.CurrentPower);
     }
 
-    [ClientRpc]
-    private void RpcInitialiseDayNight()
+    private void InitialiseDayNight()
     {
-        // Due to latency the Day Night cycle has a slight variance
-        // either method has this isse, I like the initialTime one rather than elapsed..
+        if(this.dayNightCycle == null)
+            this.dayNightCycle = GameObject.FindObjectOfType<DayNightCycle>();
+
+        /* Initialise on every client so that they are in sync.
+         * This has the negative effect of potential time skipping due to ping
+         * but in practice this is very minor and elimites the need for ping
+         * calculations. As this is a prototype, it's completely acceptable. */
         if(this.dayNightCycle != null)
-        {
-            //this.dayNightCycle.SetInitialTime(this.dayNightCycle.GenerateInitialTime());
-            this.dayNightCycle.SetInitialTimeElapsed(Time.time);
-        }
+            this.dayNightCycle.RpcSetTimeElapsed(Time.time);
     }
 }

@@ -3,19 +3,18 @@ using Mirror;
 
 public class Moveable : NetworkBehaviour
 {
+    public delegate void PickedUpDelegate(Transform target);
+    private PickedUpDelegate pickedUpCallback;
+
     private Vector3 offset;
     private bool shouldFollowForward = false;
     private bool usePhysics = false;
-
     private Transform target = null;
-    private Rigidbody _Rigidbody = null;
-
-    public delegate void PickedUpDelegate(Transform target);
-    protected PickedUpDelegate pickedUpCallback;
+    private new Rigidbody rigidbody = null;
 
     private void Start()
     {
-        this._Rigidbody = this.GetComponent<Rigidbody>();
+        this.rigidbody = this.GetComponent<Rigidbody>();
     }
 
     public void AddPickedUpCallback(PickedUpDelegate myCallback)
@@ -30,10 +29,10 @@ public class Moveable : NetworkBehaviour
 
     public void Follow(Transform targetObj, Vector3 offset, bool shouldFollowForward = false, bool usePhysics = false)
     {
-        if (this._Rigidbody != null)
+        if (this.rigidbody != null)
         {
-            this._Rigidbody.velocity = Vector3.zero;
-            this._Rigidbody.isKinematic = !usePhysics;
+            this.rigidbody.velocity = Vector3.zero;
+            this.rigidbody.isKinematic = !usePhysics;
         }
 
         this.usePhysics = usePhysics;
@@ -67,10 +66,10 @@ public class Moveable : NetworkBehaviour
             return;
         }
 
-        if (this._Rigidbody != null)
+        if (this.rigidbody != null)
         {
-            this._Rigidbody.velocity = Vector3.zero;
-            this._Rigidbody.isKinematic = !usePhysics;
+            this.rigidbody.velocity = Vector3.zero;
+            this.rigidbody.isKinematic = !usePhysics;
         }
 
         this.usePhysics = usePhysics;
@@ -101,7 +100,7 @@ public class Moveable : NetworkBehaviour
     {
         if(this.target != null)
         {
-            if (!this.usePhysics || this._Rigidbody == null)
+            if (!this.usePhysics || this.rigidbody == null)
             {
                 Vector3 newPosition = this.target.position + this.offset;
                 if (shouldFollowForward)
@@ -116,13 +115,13 @@ public class Moveable : NetworkBehaviour
     {
         if (this.target != null)
         {
-            if (this.usePhysics && this._Rigidbody != null)
+            if (this.usePhysics && this.rigidbody != null)
             {
                 Vector3 newPosition = this.target.position + this.offset;
                 if (shouldFollowForward)
                     newPosition += this.target.forward;
-                this._Rigidbody.velocity = Vector3.zero;
-                this._Rigidbody.MovePosition(newPosition);
+                this.rigidbody.velocity = Vector3.zero;
+                this.rigidbody.MovePosition(newPosition);
             }
         }
     }

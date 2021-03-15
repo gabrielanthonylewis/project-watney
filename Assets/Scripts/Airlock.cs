@@ -37,6 +37,8 @@ public class Airlock : MonoBehaviour
         this.outerDoor.SetOpenState(false);
         this.innerDoor.SetLockState(true);
         this.outerDoor.SetLockState(true);
+        this.innerDoor.SetIsBusy(true);
+        this.outerDoor.SetIsBusy(true);
 
         // Updates button text every second. e.g. 3, 2, 1
         float currSecondsToOpen = this.secondsToOpen;
@@ -50,6 +52,8 @@ public class Airlock : MonoBehaviour
         
         doorToOpen.SetLockState(false);
         doorToOpen.SetOpenState(true);
+        this.innerDoor.SetIsBusy(false);
+        this.outerDoor.SetIsBusy(false);
 
         this.isInUse = false;
     }

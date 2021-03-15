@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
 
 public class PlayerLook : NetworkBehaviour
@@ -11,44 +9,19 @@ public class PlayerLook : NetworkBehaviour
         ThirdPerson = 1
     }
     
-    [SerializeField]
-    private float horizontalSpeedMultiplier = 1.0f;
-
-    [SerializeField]
-    private float verticalSpeedMultiplier = 1.0f;
-
-    [SerializeField]
-    private Vector2 firstPersonLimitsPitch = new Vector2(-50.0f, 50.0f);
-
-    [SerializeField]
-    private Vector2 firstPersonLimitsYaw = new Vector2(-60.0f, 60.0f);
-
-    [SerializeField]
-    private Vector2 thirdPersonLimitsPitch = new Vector2(-26.0f, 60.0f);
-
-    [SerializeField]
-    private float timeToResetFromFreeLook = 0.5f;
-
-    [SerializeField]
-    private float timeToResetFromFreeLookThirdPerson = 0.5f;
-
-    [SerializeField]
-    private Camera firstPersonCamera = null;
-
-    [SerializeField]
-    private Camera thirdPersonCamera = null;
-
-    [SerializeField]
-    private float maxScrollDistanceFromPoint = 20;
-
-    [SerializeField]
-    private float minScrollDistanceFromPoint = 1;
-
-    [SerializeField]
-    private float scrollSpeedMultiplier = 5.0f;
-
-    [SerializeField]
-    private float thirdPersonLerpMultiplier = 10.0f;
+    [SerializeField] private float horizontalSpeedMultiplier = 1.0f;
+    [SerializeField] private float verticalSpeedMultiplier = 1.0f;
+    [SerializeField] private Vector2 firstPersonLimitsPitch = new Vector2(-50.0f, 50.0f);
+    [SerializeField] private Vector2 firstPersonLimitsYaw = new Vector2(-60.0f, 60.0f);
+    [SerializeField] private Vector2 thirdPersonLimitsPitch = new Vector2(-26.0f, 60.0f);
+    [SerializeField] private float timeToResetFromFreeLook = 0.5f;
+    [SerializeField] private float timeToResetFromFreeLookThirdPerson = 0.5f;
+    [SerializeField] private Camera firstPersonCamera = null;
+    [SerializeField] private Camera thirdPersonCamera = null;
+    [SerializeField] private float maxScrollDistanceFromPoint = 20;
+    [SerializeField] private float minScrollDistanceFromPoint = 1;
+    [SerializeField] private float scrollSpeedMultiplier = 5.0f;
+    [SerializeField] private float thirdPersonLerpMultiplier = 10.0f;
 
     public View currentCameraView = View.FirstPerson;
     public Camera currentCamera;
@@ -67,18 +40,15 @@ public class PlayerLook : NetworkBehaviour
     private Vector3 targetThirdPersonCameraAngles;
     private Vector3 targetThirdPersonPlayerAngles;
 
-    [SerializeField]
-    private CameraCollisionDetection collision = new CameraCollisionDetection();
+    [SerializeField] private CameraCollisionDetection collision = new CameraCollisionDetection();
 
     private float adjustmentDistance = -8.0f; // Camera distance will change if there is a collision.
 
     private Vector3 desiredCameraPosition = Vector3.zero; // Where the normal camera is meant to be (destination)
     private Vector3 adjustedCameraPosition = Vector3.zero; // If colliding use this Camera position, otherwise use normal destination (adjustedDestination)
 
-    [SerializeField]
-    private bool drawDesiredCollisionLines = true;
-    [SerializeField]
-    private bool drawAdjustedCollisionLines = true;
+    [SerializeField] private bool drawDesiredCollisionLines = true;
+    [SerializeField] private bool drawAdjustedCollisionLines = true;
 
     public delegate void ChangeViewDelegate(View newView);
     protected ChangeViewDelegate changeViewCallback;

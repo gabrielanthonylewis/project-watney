@@ -1,31 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
 
 [RequireComponent(typeof(PlayerLook))]
 public class PlayerInteract : NetworkBehaviour
 {
-    [SerializeField]
-    private LayerMask interactLayer;
+    [SerializeField] private LayerMask interactLayer;
+    [SerializeField] private float raycastDistance = 3.5f;
 
-    [SerializeField]
-    private float raycastDistance = 3.5f;
-
-    private PlayerLook _PlayerLook;
-
+    private PlayerLook playerLook;
     private Moveable currentMoveable = null;
 
     private void Start()
     {
-        _PlayerLook = this.GetComponent<PlayerLook>();
+        this.playerLook = this.GetComponent<PlayerLook>();
     }
 
     private void Update()
     {
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
-            Ray ray = new Ray(this._PlayerLook.currentCamera.transform.position, this._PlayerLook.currentCamera.transform.forward);
+            Ray ray = new Ray(this.playerLook.currentCamera.transform.position, this.playerLook.currentCamera.transform.forward);
             if(Physics.Raycast(ray, out RaycastHit hit, this.raycastDistance, this.interactLayer))
             {
                 if (NetworkClient.isConnected)
@@ -139,16 +133,14 @@ public class PlayerInteract : NetworkBehaviour
 
     private void MoveablePickedUp(Transform by)
     {
-        if (by != this._PlayerLook.currentCamera.transform)
+        if (by != this.playerLook.currentCamera.transform)
         {
             this.currentMoveable.RemovePickedUpCallback(this.MoveablePickedUp);
 
             if (NetworkClient.isConnected)
             {
                 if (by.GetComponent<NetworkIdentity>())
-                {
                     this.CmdFollowOther(this.currentMoveable.gameObject, by.GetComponent<NetworkIdentity>().netId);
-                }
             }
             else
             {

@@ -1,47 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-using Mirror;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMove : NetworkBehaviour
+public class PlayerMove : MonoBehaviour
 {
-    [SerializeField]
-    private float speedMultiplier = 1.0f;
-
-    [SerializeField]
-    private float sprintMultiplier = 1.5f;
-
-    [SerializeField]
-    private float sprintTimeToAccelerate = 1.0f;
-
-    [SerializeField]
-    private float sprintTimeToDecelerate = 1.0f;
-
-    [SerializeField]
-    private float maxSprintDuration = 1.0f;
-
-    [SerializeField]
-    private float timeToRegenStanima = 1.0f;
-
-    [SerializeField]
-    private float backwardsSpeedMultiplier = 0.5f;
-
-    [SerializeField]
-    private float crouchSpeedMultiplier = 0.75f;
-
-    [SerializeField]
-    private float proneSpeedMultiplier = 0.5f;
-
-    [SerializeField]
-    private float jumpHeight = 2.0f;
-
-    [SerializeField]
-    private float crouchJumpHeight = 0.5f;
-
-    [SerializeField]
-    private Image stanimaFill = null;
+    [SerializeField] private float speedMultiplier = 1.0f;
+    [SerializeField] private float sprintMultiplier = 1.5f;
+    [SerializeField] private float sprintTimeToAccelerate = 1.0f;
+    [SerializeField] private float sprintTimeToDecelerate = 1.0f;
+    [SerializeField] private float maxSprintDuration = 1.0f;
+    [SerializeField] private float timeToRegenStanima = 1.0f;
+    [SerializeField] private float backwardsSpeedMultiplier = 0.5f;
+    [SerializeField] private float crouchSpeedMultiplier = 0.75f;
+    [SerializeField] private float proneSpeedMultiplier = 0.5f;
+    [SerializeField] private float jumpHeight = 2.0f;
+    [SerializeField] private float crouchJumpHeight = 0.5f;
+    [SerializeField] private Image stanimaFill = null;
+    [SerializeField] private Animator animator = null;
 
     private readonly string sprintButtonName = "Fire3";
     private readonly string crouchButtonName = "Crouch";
@@ -64,15 +39,11 @@ public class PlayerMove : NetworkBehaviour
     private bool isJumping = false;
     private bool isWalking = false;
 
-    private Rigidbody _Rigidbody = null;
+    private new Rigidbody rigidbody = null;
 
-    [SerializeField]
-    private Animator _Animator = null;
-
-    void Start()
+    private void Start()
     {
-        this._Rigidbody = this.GetComponent<Rigidbody>();
-        //this._Animator = this.GetComponent<Animator>();
+        this.rigidbody = this.GetComponent<Rigidbody>();
     
         this.sprintSpeedTarget = 1.0f;
         this.sprintInterpolationValue = 1.0f;
@@ -83,49 +54,39 @@ public class PlayerMove : NetworkBehaviour
         this.canUseStanima = true;
     }
 
-    void Update()
+    private void Update()
     {
-        if (NetworkClient.isConnected &&  !this.isLocalPlayer)
-            return;
-
         // Handle the sprint state changing.
-        if (Input.GetButtonDown(this.sprintButtonName))
+        if(Input.GetButtonDown(this.sprintButtonName))
             this.OnSprintInputChanged(true);
-        else if (Input.GetButtonUp(this.sprintButtonName))
+        else if(Input.GetButtonUp(this.sprintButtonName))
             this.OnSprintInputChanged(false);
 
-        // Regen stanima if not sprinting.
         this.RegenStanima();
-
-        // Handles Crouch and Prone.
         this.HandleStances();
-
         this.HandleJump();
 
         // Animations
         float vertInput = Input.GetAxis("Vertical");
-        this._Animator.SetFloat("Speed", vertInput);
-        this._Animator.SetFloat("Direction", Input.GetAxis("Horizontal"));
+        this.animator.SetFloat("Speed", vertInput);
+        this.animator.SetFloat("Direction", Input.GetAxis("Horizontal"));
 
         bool isRunning = (this.GetCurrentSprintMultiplier(Time.deltaTime) > 1.0f);
-        this._Animator.SetBool("isRunning", isRunning);
+        this.animator.SetBool("isRunning", isRunning);
 
-        float velocityY = this._Rigidbody.velocity.y;
+        float velocityY = this.rigidbody.velocity.y;
         if (this.isJumping)
         {
-            this._Animator.SetBool("isJumping", (velocityY >= 0.0f));
-            this._Animator.SetBool("isFalling", (velocityY < 0.0f));
+            this.animator.SetBool("isJumping", (velocityY >= 0.0f));
+            this.animator.SetBool("isFalling", (velocityY < 0.0f));
         }  
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        if (NetworkClient.isConnected && !this.isLocalPlayer)
-            return;
-
         // Move player.
         Vector3 translationVector = this.CalculateTranslationVector(Time.fixedDeltaTime);
-        this._Rigidbody.MovePosition(this._Rigidbody.position + translationVector);
+        this.rigidbody.MovePosition(this.rigidbody.position + translationVector);
 
         if (translationVector != Vector3.zero && !this.isWalking)
             this.isWalking = true;
@@ -143,10 +104,10 @@ public class PlayerMove : NetworkBehaviour
     {
         if (this.isJumping)
         {
-            bool onGround = Utils.Approximately(this._Rigidbody.velocity.y, 0.0f, 0.001f);
+            bool onGround = Utils.Approximately(this.rigidbody.velocity.y, 0.0f, 0.001f);
             if (onGround)
             {
-                this._Animator.SetBool("isFalling", false);
+                this.animator.SetBool("isFalling", false);
                 this.isJumping = false;
             }
         }
@@ -160,9 +121,9 @@ public class PlayerMove : NetworkBehaviour
         
             // maxHeight = (initialVelocity^2) / (2g)
             // velocity = Sqrt(maxHeight * -2g)
-            Vector3 newVelocity = this._Rigidbody.velocity;
+            Vector3 newVelocity = this.rigidbody.velocity;
             newVelocity.y += Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
-            this._Rigidbody.velocity = newVelocity;
+            this.rigidbody.velocity = newVelocity;
 
             this.isJumping = true;
         }
@@ -174,7 +135,7 @@ public class PlayerMove : NetworkBehaviour
         if (!this.isProne)
         {
             this.isCrouching = Input.GetButton(this.crouchButtonName);
-            this._Animator.SetBool("isCrouching", this.isCrouching);
+            this.animator.SetBool("isCrouching", this.isCrouching);
         }
 
         // Handle Prone, can go from anything to prone.
@@ -290,9 +251,10 @@ public class PlayerMove : NetworkBehaviour
 
     private void RegenStanima()
     {
-        if ((!Input.GetButton(this.sprintButtonName)
-            && this.stanimaDurationLeft < this.maxSprintDuration)
-            || this.canUseStanima == false)
+        if(Input.GetButton(this.sprintButtonName))
+            return;
+
+        if((this.stanimaDurationLeft < this.maxSprintDuration) || this.canUseStanima == false)
         {
             this.stanimaInterpolationValue = Mathf.Min(this.stanimaInterpolationValue + (Time.deltaTime
                 / this.timeToRegenStanima), 1.0f);

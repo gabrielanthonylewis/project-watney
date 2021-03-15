@@ -3,14 +3,12 @@ using Mirror;
 
 public class CustomNetworkManager : NetworkManager
 {
-    [SerializeField] private SceneInitialisation sceneInitialisation;
-
-    public override void OnClientConnect(NetworkConnection conn)
+    public override void OnServerAddPlayer(NetworkConnection conn)
     {
-        base.OnClientConnect(conn);
+        base.OnServerAddPlayer(conn);
 
-        // Scene Initialisation
-        if(this.sceneInitialisation != null)
-            this.sceneInitialisation.InitialisSceneState();
+        SceneInitialisation sceneInitialisation = GameObject.FindObjectOfType<SceneInitialisation>();
+        if(sceneInitialisation != null)
+            sceneInitialisation.InitialiseSceneState(conn);
     }
 }

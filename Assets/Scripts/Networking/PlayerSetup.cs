@@ -8,31 +8,21 @@ public class PlayerSetup : NetworkBehaviour
 
     private void Start()
     {
-        if (!NetworkClient.isConnected && !NetworkClient.active)
-        {
-            // Player is in singleplayer so spawn in all objects as server wont... 
-            //todo: move this to its own script
-            if(!NetworkClient.active)
-            {
-                NetworkIdentity[] identities = Resources.FindObjectsOfTypeAll<NetworkIdentity>();
-                foreach (NetworkIdentity identity in identities)
-                    identity.gameObject.SetActive(true);
-            }
-            
+        if(!NetworkClient.isConnected && !NetworkClient.active)
             return;
-        }
 
-        if (!this.isLocalPlayer)
+        // Disables things such as the camera and movement on the non-local players.
+        if(!this.isLocalPlayer)
         {
-            foreach (Behaviour behaviour in this.componentsToDisable)
+            foreach(Behaviour behaviour in this.componentsToDisable)
                 behaviour.enabled = false;
 
-            foreach (GameObject obj in this.objectsToDisable)
+            foreach(GameObject obj in this.objectsToDisable)
                 obj.SetActive(false);
         }
 
-        if (!this.isServer)
-            this.CmdSendName("Player" + this.netId.ToString());
+        // Setup transform name on all clients for debugging purposes.
+        this.CmdSendName("Player" + this.netId.ToString());
     }
 
     [Command]
@@ -46,6 +36,4 @@ public class PlayerSetup : NetworkBehaviour
     {
         this.transform.name = name;
     }
-
-
 }

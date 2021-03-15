@@ -23,7 +23,6 @@ public class DayNightCycle : NetworkBehaviour
     private Light directionalLight = null;
     private float initialT;
     private float dayLength;
-    private float initialTimeElapsed = 0.0f;
     private float timeElapsed = 0.0f;
 
     private void Awake()
@@ -35,7 +34,6 @@ public class DayNightCycle : NetworkBehaviour
         this.initialSkyBoxMat = RenderSettings.skybox;
 
         this.dayLength = (this.sunset - this.sunrise); 
-
         this.secondsDelta = this.MARS_DURATION * this.durationMultiplier;
         this.initialT = this.timeOfDay * this.secondsDelta;
     }
@@ -45,6 +43,7 @@ public class DayNightCycle : NetworkBehaviour
         // Repeat the day night cycle [0, 1]
         this.timeElapsed += Time.deltaTime;
         this.timeOfDay = Mathf.Repeat((initialT + (this.timeElapsed)) / secondsDelta, 1.0f);
+
 
         this.UpdateExposure();
         this.UpdateLightRotation();
@@ -118,20 +117,10 @@ public class DayNightCycle : NetworkBehaviour
         this.directionalLight.intensity = this.exposure * this.directionalLightIntensity;
     }
 
-    public void SetInitialTimeElapsed(float time)
+    [ClientRpc]
+    public void RpcSetTimeElapsed(float time)
     {
-        this.initialTimeElapsed = time;
-        this.timeElapsed = this.initialTimeElapsed;
-    }
-
-    public void SetInitialTime(float initialTime)
-    {
-        this.initialT = initialTime;
-    }
-
-    public float GenerateInitialTime()
-    {
-        return this.timeOfDay * this.secondsDelta;
+        this.timeElapsed = time;
     }
 
     public float GetExposure()

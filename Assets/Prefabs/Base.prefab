@@ -996,10 +996,10 @@ MonoBehaviour:
   syncInterval: 0.1
   isUnlocked: 1
   isOpen: 0
-  _Animator: {fileID: 910931597}
-  lockedMaterial: {fileID: 2100000, guid: 1fa1e80c042a2534981e1ac9f78ec0ba, type: 2}
-  closedMaterial: {fileID: 2100000, guid: 76d411f909cde924496d8fd987ea4b88, type: 2}
-  openMaterial: {fileID: 2100000, guid: 686aab55584adf2469a8c540b759b457, type: 2}
+  animator: {fileID: 910931597}
+  canOpenMaterial: {fileID: 2100000, guid: 686aab55584adf2469a8c540b759b457, type: 2}
+  cantOpenMaterial: {fileID: 2100000, guid: 1fa1e80c042a2534981e1ac9f78ec0ba, type: 2}
+  isBusyMaterial: {fileID: 2100000, guid: 76d411f909cde924496d8fd987ea4b88, type: 2}
   displayRenderer: {fileID: 3012610526411867754}
   displayText: {fileID: 468010088264158186}
 --- !u!114 &8522538093963784764
@@ -2155,10 +2155,10 @@ MonoBehaviour:
   syncInterval: 0.1
   isUnlocked: 0
   isOpen: 0
-  _Animator: {fileID: 4563570890687751200}
-  lockedMaterial: {fileID: 2100000, guid: 1fa1e80c042a2534981e1ac9f78ec0ba, type: 2}
-  closedMaterial: {fileID: 2100000, guid: 76d411f909cde924496d8fd987ea4b88, type: 2}
-  openMaterial: {fileID: 2100000, guid: 686aab55584adf2469a8c540b759b457, type: 2}
+  animator: {fileID: 4563570890687751200}
+  canOpenMaterial: {fileID: 2100000, guid: 686aab55584adf2469a8c540b759b457, type: 2}
+  cantOpenMaterial: {fileID: 2100000, guid: 1fa1e80c042a2534981e1ac9f78ec0ba, type: 2}
+  isBusyMaterial: {fileID: 2100000, guid: 76d411f909cde924496d8fd987ea4b88, type: 2}
   displayRenderer: {fileID: 5246097385662272503}
   displayText: {fileID: 4583939917969297710}
 --- !u!114 &1390102225791189276

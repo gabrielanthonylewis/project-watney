@@ -1,33 +1,32 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
 
 public class PlayerSpawnManager : NetworkBehaviour
 {
-    [SerializeField]
-    private GameObject offlinePlayerPrefab = null;
+    [SerializeField] private GameObject offlinePlayerPrefab = null;
+    [SerializeField] private Transform offlinePlayerSpawnPoint = null;
+    [SerializeField] private GameObject respawnUI = null;
+    [SerializeField] private PlayerInitialisation playerInitialisation = null;
 
-    [SerializeField]
-    private Transform offlinePlayerSpawnPoint = null;
-
-    [SerializeField]
-    private GameObject respawnUI = null;
-
-    [SerializeField]
-    private PlayerInitialisation _PlayerInitialisation = null;
-
-    public void RespawnButtonPressed()
+    private GameObject GetLocalPlayer() 
     {
-        this.RespawnLocalPlayer();
+        return (NetworkClient.isConnected) ? NetworkClient.connection.identity.gameObject
+            : playerInitialisation.GetOfflinePlayer();
     }
 
-    private void RespawnLocalPlayer()
+    private void ShowRespawnUI(bool shouldShow)
     {
-        if (NetworkClient.isConnected)
+        this.respawnUI.SetActive(shouldShow);
+        Cursor.lockState = (shouldShow) ? CursorLockMode.Confined : CursorLockMode.Locked;
+    }
+
+    #region Respawn
+    public void RespawnButtonPressed()
+    {
+        if(NetworkClient.isConnected)
             this.CmdRespawnPlayer(NetworkClient.connection.identity.gameObject);
         else
-            this.RespawnPlayer(_PlayerInitialisation.localPlayer);
+            this.RespawnPlayer(playerInitialisation.GetOfflinePlayer());
     }
 
     [Command]
@@ -46,20 +45,22 @@ public class PlayerSpawnManager : NetworkBehaviour
     {
         player.transform.position = this.offlinePlayerSpawnPoint.position + Vector3.up;
         player.transform.rotation = this.offlinePlayerSpawnPoint.rotation;
-
         player.GetComponent<PlayerStats>().Respawn();
-
         player.SetActive(true);
 
-        GameObject localPlayer = _PlayerInitialisation.localPlayer;
-        if (NetworkClient.isConnected)
-            localPlayer = NetworkClient.connection.identity.gameObject;
-        if (localPlayer == player)
-        {
-            this.respawnUI.SetActive(false);
+        if(this.GetLocalPlayer() == player)
+            this.ShowRespawnUI(false);
+    }
+    #endregion
 
-            Cursor.lockState = CursorLockMode.Locked;
-        }
+    #region Player Died
+    public void OnLocalPlayerDied()
+    {
+        GameObject player = this.GetLocalPlayer();
+        if(NetworkClient.isConnected)
+            this.CmdPlayerDied(player);
+        else
+            this.PlayerDied(player);
     }
 
     [Command]
@@ -76,31 +77,14 @@ public class PlayerSpawnManager : NetworkBehaviour
 
     private void PlayerDied(GameObject player)
     {
-        // return as already dead
-        if (this.respawnUI.activeSelf)
+        // Return as already dead.
+        if(this.respawnUI.activeSelf)
             return;
 
         player.SetActive(false);
 
-        GameObject localPlayer = _PlayerInitialisation.localPlayer;
-        if (NetworkClient.isConnected)
-            localPlayer = NetworkClient.connection.identity.gameObject;
-        if (localPlayer == player)
-        {
-            Cursor.lockState = CursorLockMode.Confined;
-            this.respawnUI.SetActive(true);
-        }
+        if(this.GetLocalPlayer() == player)
+            this.ShowRespawnUI(true);
     }
-
-    public void LocalPlayerDied()
-    {
-        GameObject player = _PlayerInitialisation.localPlayer;
-        if (NetworkClient.isConnected)
-            player = NetworkClient.connection.identity.gameObject;
-
-        if(NetworkClient.isConnected)
-            this.CmdPlayerDied(player);
-        else
-            this.PlayerDied(player);
-    }
+    #endregion
 }
