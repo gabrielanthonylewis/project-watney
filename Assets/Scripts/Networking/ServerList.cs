@@ -44,71 +44,21 @@ public struct Server
     }
 }
 
-public class DiscoveryMessage : MessageBase
-{
-    public string ipAddress;
-
-    public DiscoveryMessage(string ipAddress)
-    {
-        this.ipAddress = ipAddress;
-    }
-
-    public override void Deserialize(NetworkReader reader)
-    {
-        this.ipAddress = reader.ReadString();
-    }
-
-    public override void Serialize(NetworkWriter writer)
-    {
-        writer.WriteString(this.ipAddress);
-    }
-}
-
 public class ServerList : MonoBehaviour
 {
-    [SerializeField]
-    private Transform contentHolder = null;
-
-    [SerializeField]
-    private GameObject serverListItemPrefab = null;
-
-    [SerializeField]
-    private NetworkManager _NetworkManager;
-
-    [SerializeField]
-    private int mainSceneIndex = 1;
-
-    [SerializeField]
-    private int loadingSceneIndex = 2;
+    [SerializeField] private Transform contentHolder = null;
+    [SerializeField] private GameObject serverListItemPrefab = null;
+    [SerializeField] private int loadingSceneIndex = 2;
+    [SerializeField] private TMP_InputField nameInputField = null;
+    [SerializeField] private TMP_InputField ipAddressInputField = null;
+    [SerializeField] private TMP_InputField portInputField = null;
+    [SerializeField] private Button joinButton, editButton, removeButton;
+    [SerializeField] private GameObject joiningServerMessageHolder = null;
+    [SerializeField] private TextMeshProUGUI timePassedJoiningServerText = null;
+    [SerializeField] private GameObject removeWarningMessageHolder = null;
 
     private List<Server> serverListItems = new List<Server>();
-
-    [SerializeField]
-    private NetworkDiscovery _NetworkDiscovery = null;
-
-    [SerializeField]
-    private TMP_InputField nameInputField = null;
-
-    [SerializeField]
-    private TMP_InputField ipAddressInputField = null;
-
-    [SerializeField]
-    private TMP_InputField portInputField = null;
-
-    [SerializeField]
-    private Button joinButton, refreshButton, editButton, addButton, removeButton;
-
-    [SerializeField]
-    private GameObject joiningServerMessageHolder = null;
-
-    [SerializeField]
-    private TextMeshProUGUI timePassedJoiningServerText = null;
-
-    [SerializeField]
-    private GameObject removeWarningMessageHolder = null;
-
     private Server selectedServer = new Server(new ServerDetails("","",""), null);
-
     private float timePassedJoiningServer = 0.0f;
     private bool isAddingNewServer = false;
     private string serverListJSONPath;
@@ -140,7 +90,6 @@ public class ServerList : MonoBehaviour
         this.PopulateServerList(loadedServerData);
 
         this.selectedServer = new Server(new ServerDetails("", "", ""), null);
-
         this.editButton.interactable = false;
         this.joinButton.interactable = false;
         this.removeButton.interactable = false;
@@ -148,54 +97,51 @@ public class ServerList : MonoBehaviour
 
     private void EmptyList()
     {
-        foreach (Server server in this.serverListItems)
-            Destroy(server.item.gameObject);
+        foreach(Server server in this.serverListItems)
+            GameObject.Destroy(server.item.gameObject);
 
         this.serverListItems = new List<Server>();
     }
 
     private void PopulateServerList(ServerDetailsCollection serverData)
     {
-        foreach (ServerDetails serverDetails in serverData.serverList)
+        foreach(ServerDetails serverDetails in serverData.serverList)
         {
             GameObject newServerListItemObj =
                 GameObject.Instantiate(this.serverListItemPrefab, this.contentHolder, false);
 
             ServerListItem newItem = newServerListItemObj.GetComponent<ServerListItem>();
             newItem.Initialise(this, serverDetails);
-            this.OnServerLoaded(new Server(serverDetails, newItem));
+            this.AddServer(new Server(serverDetails, newItem));
         }
     }
 
-    private void OnServerLoaded(Server newServer)
+    private void AddServer(Server newServer)
     {
         this.serverListItems.Add(newServer);
         newServer.item.SetIsConnected(false);
-
         this.CheckConnection(newServer);
     }
 
     private void CheckConnection(Server server)
     {
-        // Send message to servers to see if there is a response back.s);
+        // Send discovery message to servers to see if there is a response back.
         IPAddress ipAddress = IPAddress.Parse(server.details.ipaddress);
         ushort port = ushort.Parse(server.details.port);
-
-        //todo: after calling this 3 times (once for each server i get the port error log, ask discord?)
         NetworkDiscovery.SendDiscoveryRequest(new IPEndPoint(ipAddress, port));
     }
 
     private void JoinServer(string ipaddress)
     {
         NetworkManager.singleton.networkAddress = ipaddress;
-        // Todo: set port somehow?
+        // Note: Nowhere does Mirror ask for a port?
         NetworkManager.singleton.StartClient();
 
         this.timePassedJoiningServer = 0.0f;
-        this.joiningServerMessageHolder.SetActive(true);
         this.timePassedJoiningServerText.text = this.timePassedJoiningServer.ToString() + "s";
+        this.joiningServerMessageHolder.SetActive(true);
 
-        StartCoroutine(this.UpdateTimePassedJoiningServer());
+        this.StartCoroutine(this.UpdateTimePassedJoiningServer());
     }
 
     private IEnumerator UpdateTimePassedJoiningServer()
@@ -213,18 +159,16 @@ public class ServerList : MonoBehaviour
     public void StopTryingToConnect()
     {
         this.joiningServerMessageHolder.SetActive(false);
-
         NetworkManager.singleton.StopClient();
     }
 
-    void OnClientConnected()
+    private void OnClientConnected()
     {
-        // todo: do I need this? I think I do as .active is true if connected.
-        StopCoroutine(this.UpdateTimePassedJoiningServer());
+        this.StopCoroutine(this.UpdateTimePassedJoiningServer());
         this.LoadMainScene();
     }
 
-    void OnClientDisconnected()
+    private void OnClientDisconnected()
     {
         this.timePassedJoiningServerText.text = "! could not connect !";
     }
@@ -236,31 +180,32 @@ public class ServerList : MonoBehaviour
 
     public void CheckAllConnections()
     {
-        for(int i = 0; i < this.serverListItems.Count; i++)
+        foreach(Server server in this.serverListItems)
         {
-            this.serverListItems[i].item.SetIsConnected(false);
+            server.item.SetIsConnected(false);
 
-            IPAddress ipAddress = IPAddress.Parse(this.serverListItems[i].details.ipaddress);
-            ushort port = ushort.Parse(this.serverListItems[i].details.port);
+            IPAddress ipAddress = IPAddress.Parse(server.details.ipaddress);
+            ushort port = ushort.Parse(server.details.port);
             NetworkDiscovery.SendDiscoveryRequest(new IPEndPoint(ipAddress, port));
         }
     }
 
     public void OnReceivedServerResponse(NetworkDiscovery.DiscoveryInfo info)
     {
-        foreach (Server server in this.serverListItems)
+        string endPointIPAddress = info.EndPoint.Address.ToString();
+        foreach(Server server in this.serverListItems)
         {
-            if (server.details.ipaddress == info.EndPoint.Address.ToString())
+            if(server.details.ipaddress == endPointIPAddress)
                 server.item.SetIsConnected(true);
         }
     }
 
     public void OnServerSelected(ServerListItem serverListItem)
     {
-        if (serverListItem == null)
+        if(serverListItem == null)
             return;
 
-        foreach (Server server in this.serverListItems)
+        foreach(Server server in this.serverListItems)
         {
             if(server.item == serverListItem)
                 this.selectedServer = server;
@@ -273,7 +218,7 @@ public class ServerList : MonoBehaviour
 
     public void OnJoinButtonPressed()
     {
-        if (this.selectedServer.item == null)
+        if(this.selectedServer.item == null)
             return;
 
         this.JoinServer(this.selectedServer.details.ipaddress);
@@ -281,7 +226,7 @@ public class ServerList : MonoBehaviour
 
     public void OnEditButtonPressed()
     {
-        if (this.selectedServer.item == null)
+        if(this.selectedServer.item == null)
             return;
 
         this.nameInputField.text = this.selectedServer.details.name;
@@ -291,19 +236,14 @@ public class ServerList : MonoBehaviour
 
     public void OnSaveButtonPressed()
     {
-        if (this.selectedServer.item == null)
+        if(this.selectedServer.item == null)
             return;
     
-        string json = File.ReadAllText(this.serverListJSONPath);
-        ServerDetailsCollection loadedServerData = JsonUtility.FromJson<ServerDetailsCollection>(json);
-
-        // Update selected server with new details.        
-
-
         // Save all servers to list.
         List<ServerDetails> toSave = new List<ServerDetails>();
         for(int i = 0; i < this.serverListItems.Count; i++)
         {
+            // Update selected server with new details.
             if(this.serverListItems[i].item == this.selectedServer.item)
             {
                 Server newServerDetails = new Server(new ServerDetails(this.nameInputField.text,
@@ -313,18 +253,14 @@ public class ServerList : MonoBehaviour
 
             toSave.Add(this.serverListItems[i].details);
         }
-
-        loadedServerData.serverList = toSave.ToArray();
-        string toSaveString = JsonUtility.ToJson(loadedServerData, true);
-
-        File.WriteAllText(this.serverListJSONPath, toSaveString);
+        this.SaveServerDetailsToJSON(toSave.ToArray());        
 
         this.isAddingNewServer = false;
     }
 
     public void OnRemoveButtonPressed()
     {
-        if (this.selectedServer.item == null)
+        if(this.selectedServer.item == null)
             return;
 
         this.removeWarningMessageHolder.SetActive(true);
@@ -332,29 +268,32 @@ public class ServerList : MonoBehaviour
 
     public void OnRemoveServerYesButtonPressed()
     {
-        if (this.selectedServer.item == null)
+        if(this.selectedServer.item == null)
             return;
-
-        string json = File.ReadAllText(this.serverListJSONPath);
-        ServerDetailsCollection loadedServerData = JsonUtility.FromJson<ServerDetailsCollection>(json);
-
+       
         List<ServerDetails> toSave = new List<ServerDetails>();
-        foreach (Server server in this.serverListItems)
+        foreach(Server server in this.serverListItems)
         {
-            if (server.item == this.selectedServer.item)
+            // Skip the server to be removed, so it doesn't get added to the save list.
+            if(server.item == this.selectedServer.item)
                 continue;
 
             toSave.Add(server.details);
         }
-
-        loadedServerData.serverList = toSave.ToArray();
-        string toSaveString = JsonUtility.ToJson(loadedServerData, true);
-
-        File.WriteAllText(this.serverListJSONPath, toSaveString);
+        this.SaveServerDetailsToJSON(toSave.ToArray());
 
         this.RefreshList();
 
         this.removeWarningMessageHolder.SetActive(false);
+    }
+
+    private void SaveServerDetailsToJSON(ServerDetails[] serverDetails)
+    {
+        string json = File.ReadAllText(this.serverListJSONPath);
+        ServerDetailsCollection loadedServerData = JsonUtility.FromJson<ServerDetailsCollection>(json);
+        loadedServerData.serverList = serverDetails;
+        string toSaveString = JsonUtility.ToJson(loadedServerData, true);
+        File.WriteAllText(this.serverListJSONPath, toSaveString);
     }
 
     public void OnRemoveServerNoButtonPressed()
@@ -364,17 +303,22 @@ public class ServerList : MonoBehaviour
 
     public void OnAddButtonPressed()
     {
+        // Default values.
         this.nameInputField.text = "name";
         this.ipAddressInputField.text = "0.0.0.0";
         this.portInputField.text = "0000";
 
-        GameObject newServerListItemObj =
-            GameObject.Instantiate(this.serverListItemPrefab, this.contentHolder, false);
+        // Spawn new server button.
+        GameObject newServerListItemObj = GameObject.Instantiate(this.serverListItemPrefab,
+            this.contentHolder, false);
 
-        ServerDetails newServerDetails = new ServerDetails("name", "0.0.0.0", "0000");
+        // Initialise with default values.
+        ServerDetails newServerDetails = new ServerDetails(this.nameInputField.text,
+            this.ipAddressInputField.text, this.portInputField.text);
         ServerListItem newItem = newServerListItemObj.GetComponent<ServerListItem>();
         newItem.Initialise(this, newServerDetails);
  
+        // Add to the list and select.
         Server newServer = new Server(newServerDetails, newItem);
         this.serverListItems.Add(newServer);
         this.selectedServer = newServer;
@@ -382,13 +326,13 @@ public class ServerList : MonoBehaviour
         this.isAddingNewServer = true;
     }
 
-    // NOTE that this is also called in edit which is why check needs to be done..
+    // NOTE: this is also called in edit which is why isAddingNewServer check needs to be done.
     public void OnAddBackButtonPressed()
     {
-        if (!this.isAddingNewServer)
+        if(!this.isAddingNewServer)
             return;
 
-        // delete last server item
+        // Delete newly created server item as the process was cancelled.
         GameObject.Destroy(this.serverListItems[this.serverListItems.Count - 1].item.gameObject);
         this.serverListItems.RemoveAt(this.serverListItems.Count - 1);
         this.selectedServer = new Server(new ServerDetails("", "", ""), null);
