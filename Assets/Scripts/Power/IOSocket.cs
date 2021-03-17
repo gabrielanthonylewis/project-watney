@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using Mirror;
 
-public class IOSocket : NetworkBehaviour
+public class IOSocket : MonoBehaviour
 {
     public enum SocketType
     {
@@ -27,24 +26,22 @@ public class IOSocket : NetworkBehaviour
         MoveableCableEnd cableEnd = other.GetComponent<MoveableCableEnd>();
         if(cableEnd != null)
         {
+            if(cableEnd == this.insertedCable)
+                return;
+        
             this.insertedCable = cableEnd;
-            this.insertedCable.AddPickedUpCallback(this.OnCablePickedUp);
-            this.insertedCable.InvokePickedUpCallback(this.transform);
+            this.insertedCable.Pickup(this.transform, Vector3.zero, false, false, this.OnCablePickedUpByOther);
             this.insertedCable.SetConnection(this.controllerUnit, this);
         }
     }
 
-    private void OnCablePickedUp(Transform by)
+    private void OnCablePickedUpByOther()
     {
-        if(by != this.transform)
+        // Remove cable from socket.
+        if(this.insertedCable != null)
         {
-            // Remove cable from socket.
-            if(this.insertedCable != null)
-            {
-                this.insertedCable.SetConnection(null, null);
-                this.insertedCable.RemovePickedUpCallback(this.OnCablePickedUp);
-                this.insertedCable = null;
-            }
+            this.insertedCable.SetConnection(null, null);
+            this.insertedCable = null;
         }
     }
 }

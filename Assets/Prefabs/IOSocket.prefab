@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6217261415433266770}
   - component: {fileID: 6217261415433266773}
   - component: {fileID: 6217261415433266772}
-  - component: {fileID: -96810847780823646}
   m_Layer: 0
   m_Name: IOSocket
   m_TagString: Untagged
@@ -63,19 +62,3 @@ MonoBehaviour:
   controllerUnit: {fileID: 0}
   socketType: 0
   insertedCable: {fileID: 0}
---- !u!114 &-96810847780823646
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6217261415433266771}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  serverOnly: 0
-  localPlayerAuthority: 1
-  m_AssetId: 
-  m_SceneId: 0

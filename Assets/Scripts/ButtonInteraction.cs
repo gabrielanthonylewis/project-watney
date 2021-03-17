@@ -1,7 +1,7 @@
-﻿using Mirror;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
-public class ButtonInteraction : NetworkBehaviour
+public class ButtonInteraction : MonoBehaviour
 {
     private UnityEvent buttonPressedCallback = new UnityEvent();
 
@@ -16,20 +16,6 @@ public class ButtonInteraction : NetworkBehaviour
     }
 
     public void Interact()
-    {
-        if (NetworkClient.isConnected)
-            this.RpcInteract();
-        else
-            this.InvokeCallback();
-    }
-
-    [ClientRpc]
-    private void RpcInteract()
-    {
-        this.InvokeCallback();
-    }
-
-    private void InvokeCallback()
     {
         if(this.buttonPressedCallback != null)
             this.buttonPressedCallback.Invoke();

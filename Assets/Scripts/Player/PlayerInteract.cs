@@ -22,132 +22,101 @@ public class PlayerInteract : NetworkBehaviour
             Ray ray = new Ray(this.playerLook.currentCamera.transform.position, this.playerLook.currentCamera.transform.forward);
             if(Physics.Raycast(ray, out RaycastHit hit, this.raycastDistance, this.interactLayer))
             {
-                if (NetworkClient.isConnected)
-                {
-                    this.CmdUse(hit.transform.gameObject);
-                    this.CmdPickup(hit.transform.gameObject, this.GetComponent<NetworkIdentity>().netId);
-                }
+                if(NetworkClient.isConnected)
+                    this.CmdTryUse(hit.transform.gameObject, this.gameObject);
                 else
+                    this.TryUse(hit.transform.gameObject, this.gameObject);
+
+                if(this.currentMoveable == null)
                 {
-                    this.TryUse(hit.transform.gameObject);
-                    this.TryPickup(hit.transform.gameObject);
+                    Moveable moveable = hit.transform.GetComponent<Moveable>();
+                    if(moveable != null)
+                    {
+                        this.currentMoveable = moveable;
+
+                        if(NetworkClient.isConnected)
+                            this.CmdPickupMoveable(this.currentMoveable.gameObject, this.gameObject);
+                        else
+                            this.PickupMoveable(this.currentMoveable.gameObject, this.gameObject);     
+                    }
                 }
             }
         }
 
         if(Input.GetKeyDown(KeyCode.Mouse1))
         {
-            if (this.currentMoveable)
+            if(this.currentMoveable != null)
             {
-                if (NetworkClient.isConnected)
-                    this.CmdDrop();
+                if(NetworkClient.isConnected)
+                    this.CmdDrop(this.currentMoveable.gameObject);
                 else
-                    this.Drop();
+                    this.Drop(this.currentMoveable.gameObject);
+
+                this.currentMoveable = null;
             }
         }
     }
 
-    private void TryUse(GameObject sceneObject)
+    private void TryUse(GameObject sceneObject, GameObject interactor)
     {
         Door door = sceneObject.transform.GetComponent<Door>();
-        if (door != null)
+        if(door != null)
             door.Interact();
 
         ButtonInteraction button = sceneObject.transform.GetComponent<ButtonInteraction>();
-        if (button != null)
+        if(button != null)
             button.Interact();
     }
 
     [Command]
-    void CmdUse(GameObject sceneObject)
+    private void CmdTryUse(GameObject sceneObject, GameObject interactor)
     {
-        this.TryUse(sceneObject);
+        this.RpcTryUse(sceneObject, interactor);
     }
 
-    private void Drop()
+    [ClientRpc]
+    private void RpcTryUse(GameObject sceneObject, GameObject interactor)
     {
-        // Do i need this? I think so?
-        this.currentMoveable.RemovePickedUpCallback(this.MoveablePickedUp);
-        this.currentMoveable.Drop();
+        this.TryUse(sceneObject, interactor);
+    }
+
+    private void PickupMoveable(GameObject moveableObj, GameObject interactor)
+    {
+        moveableObj.GetComponent<Moveable>().Pickup(interactor.GetComponent<PlayerLook>().currentCamera.transform,
+            Vector3.zero, true, true, interactor.GetComponent<PlayerInteract>().OnMoveablePickedUpByOther);
+    }
+
+    [Command]
+    private void CmdPickupMoveable(GameObject moveableObj, GameObject interactor)
+    {
+        this.RpcPickupMoveable(moveableObj, interactor);
+    }
+
+    [ClientRpc]
+    private void RpcPickupMoveable(GameObject moveableObj, GameObject interactor)
+    {
+        this.PickupMoveable(moveableObj, interactor);
+    }
+
+    private void Drop(GameObject moveableObj)
+    {
+        moveableObj.transform.GetComponent<Moveable>().Drop();
+    }
+
+    [Command]
+    void CmdDrop(GameObject moveableObj)
+    {
+        this.RpcDrop(moveableObj);
+    }
+
+    [ClientRpc]
+    void RpcDrop(GameObject moveableObj)
+    {
+        this.Drop(moveableObj);
+    }
+
+    private void OnMoveablePickedUpByOther()
+    {
         this.currentMoveable = null;
-    }
-
-    [Command]
-    void CmdDrop()
-    {
-        this.RpcDrop();
-    }
-
-    [ClientRpc]
-    void RpcDrop()
-    {
-        this.Drop();
-    }
-
-    void TryPickup(GameObject moveableObject)
-    {
-        if (this.currentMoveable == null)
-        {
-            Moveable moveable = moveableObject.transform.GetComponent<Moveable>();
-            if (moveable != null)
-            {
-                this.currentMoveable = moveable;
-                this.currentMoveable.AddPickedUpCallback(this.MoveablePickedUp);
-                this.currentMoveable.Follow(this.transform.GetComponent<PlayerLook>().currentCamera.transform
-                    , Vector3.zero, true, true);
-            }
-        }
-    }
-
-    [Command]
-    void CmdPickup(GameObject moveableObject, uint networkID)
-    {
-        this.RpcPickup(moveableObject, networkID);
-    }
-
-    [ClientRpc]
-    void RpcPickup(GameObject moveableObject, uint networkID)
-    {
-        if (this.currentMoveable == null)
-        {
-            Moveable moveable = moveableObject.transform.GetComponent<Moveable>();
-            if (moveable != null)
-            {
-                this.currentMoveable = moveable;
-                this.currentMoveable.AddPickedUpCallback(this.MoveablePickedUp);
-                this.currentMoveable.RpcFollow(networkID, Vector3.zero, true, true);
-            }
-        }
-    }
-
-    [Command]
-    private void CmdFollowOther(GameObject moveableObject, uint networkID)
-    {
-        moveableObject.transform.GetComponent<Moveable>().RpcFollow(networkID, Vector3.zero, false, false);
-    }
-
-    private void FollowOther(GameObject moveableObject, Transform target)
-    {
-        moveableObject.transform.GetComponent<Moveable>().Follow(target, Vector3.zero, false, false);
-    }
-
-    private void MoveablePickedUp(Transform by)
-    {
-        if (by != this.playerLook.currentCamera.transform)
-        {
-            this.currentMoveable.RemovePickedUpCallback(this.MoveablePickedUp);
-
-            if (NetworkClient.isConnected)
-            {
-                if (by.GetComponent<NetworkIdentity>())
-                    this.CmdFollowOther(this.currentMoveable.gameObject, by.GetComponent<NetworkIdentity>().netId);
-            }
-            else
-            {
-                this.FollowOther(this.currentMoveable.gameObject, by);
-            }
-
-            this.currentMoveable = null;
-        }
     }
 }

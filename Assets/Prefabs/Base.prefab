@@ -59,8 +59,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac17bbc90012dd94bbd4b1adca381769, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
 --- !u!114 &2060132672824592038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,8 +134,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac17bbc90012dd94bbd4b1adca381769, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
 --- !u!114 &3809755097178943641
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4782,6 +4778,11 @@ PrefabInstance:
     m_TransformParent: {fileID: 1402957631052008582}
     m_Modifications:
     - target: {fileID: 3267507157941108549, guid: 3947587e43cd26f41bd438ab9a5eaacc,
+        type: 3}
+      propertyPath: m_AssetId
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5132544082067620304, guid: 3947587e43cd26f41bd438ab9a5eaacc,
         type: 3}
       propertyPath: m_AssetId
       value: 
