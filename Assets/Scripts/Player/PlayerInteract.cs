@@ -19,14 +19,21 @@ public class PlayerInteract : NetworkBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
-            Ray ray = new Ray(this.playerLook.currentCamera.transform.position, this.playerLook.currentCamera.transform.forward);
+            Transform cameraTransform = this.playerLook.currentCamera.transform;
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
             if(Physics.Raycast(ray, out RaycastHit hit, this.raycastDistance, this.interactLayer))
             {
-                if(NetworkClient.isConnected)
-                    this.CmdTryUse(hit.transform.gameObject, this.gameObject);
-                else
-                    this.TryUse(hit.transform.gameObject, this.gameObject);
+                // Interact.
+                if(hit.transform.gameObject.GetComponent<Door>() != null ||
+                    hit.transform.gameObject.GetComponent<ButtonInteraction>() != null)
+                {
+                    if(NetworkClient.isConnected)
+                        this.CmdInteract(hit.transform.gameObject, this.gameObject);
+                    else
+                        this.Interact(hit.transform.gameObject, this.gameObject);
+                }
 
+                // Pickup.
                 if(this.currentMoveable == null)
                 {
                     Moveable moveable = hit.transform.GetComponent<Moveable>();
@@ -43,6 +50,7 @@ public class PlayerInteract : NetworkBehaviour
             }
         }
 
+        // Drop.
         if(Input.GetKeyDown(KeyCode.Mouse1))
         {
             if(this.currentMoveable != null)
@@ -57,33 +65,41 @@ public class PlayerInteract : NetworkBehaviour
         }
     }
 
-    private void TryUse(GameObject sceneObject, GameObject interactor)
+    #region Interact
+    private void Interact(GameObject sceneObject, GameObject interactor)
     {
-        Door door = sceneObject.transform.GetComponent<Door>();
+        Door door = sceneObject.GetComponent<Door>();
         if(door != null)
             door.Interact();
 
-        ButtonInteraction button = sceneObject.transform.GetComponent<ButtonInteraction>();
+        ButtonInteraction button = sceneObject.GetComponent<ButtonInteraction>();
         if(button != null)
             button.Interact();
     }
 
     [Command]
-    private void CmdTryUse(GameObject sceneObject, GameObject interactor)
+    private void CmdInteract(GameObject sceneObject, GameObject interactor)
     {
-        this.RpcTryUse(sceneObject, interactor);
+        this.RpcInteract(sceneObject, interactor);
     }
 
     [ClientRpc]
-    private void RpcTryUse(GameObject sceneObject, GameObject interactor)
+    private void RpcInteract(GameObject sceneObject, GameObject interactor)
     {
-        this.TryUse(sceneObject, interactor);
+        this.Interact(sceneObject, interactor);
     }
+    #endregion
 
+    #region Pickup
     private void PickupMoveable(GameObject moveableObj, GameObject interactor)
     {
         moveableObj.GetComponent<Moveable>().Pickup(interactor.GetComponent<PlayerLook>().currentCamera.transform,
             Vector3.zero, true, true, interactor.GetComponent<PlayerInteract>().OnMoveablePickedUpByOther);
+    }
+
+    private void OnMoveablePickedUpByOther()
+    {
+        this.currentMoveable = null;
     }
 
     [Command]
@@ -97,7 +113,9 @@ public class PlayerInteract : NetworkBehaviour
     {
         this.PickupMoveable(moveableObj, interactor);
     }
+    #endregion
 
+    #region Drop
     private void Drop(GameObject moveableObj)
     {
         moveableObj.transform.GetComponent<Moveable>().Drop();
@@ -114,9 +132,5 @@ public class PlayerInteract : NetworkBehaviour
     {
         this.Drop(moveableObj);
     }
-
-    private void OnMoveablePickedUpByOther()
-    {
-        this.currentMoveable = null;
-    }
+    #endregion
 }
