@@ -2701,10 +2701,6 @@ MonoBehaviour:
   minScrollDistanceFromPoint: 1.5
   scrollSpeedMultiplier: 500
   thirdPersonLerpMultiplier: 10
-  currentCameraView: 0
-  currentCamera: {fileID: 0}
-  isFreeLooking: 0
-  shouldLerpFromFreeLook: 0
   collision:
     collisionLayer:
       serializedVersion: 2
@@ -2714,6 +2710,10 @@ MonoBehaviour:
     desiredCameraClipPoints: []
   drawDesiredCollisionLines: 0
   drawAdjustedCollisionLines: 0
+  currentView: 0
+  currentCamera: {fileID: 0}
+  isFreeLooking: 0
+  shouldLerpFromFreeLook: 0
 --- !u!114 &54249169
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2728,15 +2728,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speedMultiplier: 3
   sprintMultiplier: 1.5
-  sprintTimeToAccelerate: 0.25
-  sprintTimeToDecelerate: 0.5
-  maxSprintDuration: 5
-  timeToRegenStanima: 1
+  maxStanimaDuration: 5
+  stanimaRegenDuration: 1
   backwardsSpeedMultiplier: 0.75
   crouchSpeedMultiplier: 0.5
-  proneSpeedMultiplier: 0.25
-  jumpHeight: 1
-  crouchJumpHeight: 0.5
+  standingJumpHeight: 1
+  crouchedJumpHeight: 0.5
   stanimaFill: {fileID: 1900297054}
   animator: {fileID: 516081086608761075}
 --- !u!114 &5623236269176124295
@@ -2813,7 +2810,8 @@ MonoBehaviour:
   interactLayer:
     serializedVersion: 2
     m_Bits: 512
-  raycastDistance: 3.5
+  firstPersonRayDistance: 3.5
+  thirdPersonRayDistance: 9
 --- !u!114 &1082192083
 MonoBehaviour:
   m_ObjectHideFlags: 0

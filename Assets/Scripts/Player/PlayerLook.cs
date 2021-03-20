@@ -22,37 +22,29 @@ public class PlayerLook : NetworkBehaviour
     [SerializeField] private float minScrollDistanceFromPoint = 1;
     [SerializeField] private float scrollSpeedMultiplier = 5.0f;
     [SerializeField] private float thirdPersonLerpMultiplier = 10.0f;
-
-    public View currentCameraView = View.FirstPerson;
-    public Camera currentCamera;
-
-    private readonly string freeLookButtonName = "FreeLook";
-    private readonly string changeViewButtonName = "ChangeView";
-
-    public bool isFreeLooking = false;
-    public bool shouldLerpFromFreeLook = false;
-    private float freeLookInterpolationValue;
-    private Vector2 initialFreeLookLerpValues;
-
-    private float initialDistanceFromPoint;
-    private float currentDistanceFromPoint;
-
-    private Vector3 targetThirdPersonCameraAngles;
-    private Vector3 targetThirdPersonPlayerAngles;
-
     [SerializeField] private CameraCollisionDetection collision = new CameraCollisionDetection();
-
-    private float adjustmentDistance = -8.0f; // Camera distance will change if there is a collision.
-
-    private Vector3 desiredCameraPosition = Vector3.zero; // Where the normal camera is meant to be (destination)
-    private Vector3 adjustedCameraPosition = Vector3.zero; // If colliding use this Camera position, otherwise use normal destination (adjustedDestination)
-
     [SerializeField] private bool drawDesiredCollisionLines = true;
     [SerializeField] private bool drawAdjustedCollisionLines = true;
+
+    public View currentView = View.FirstPerson;
+    public Camera currentCamera;
+    public bool isFreeLooking = false;
+    public bool shouldLerpFromFreeLook = false;
 
     public delegate void ChangeViewDelegate(View newView);
     protected ChangeViewDelegate changeViewCallback;
 
+    private readonly string freeLookButtonName = "FreeLook";
+    private readonly string changeViewButtonName = "ChangeView";
+    private float freeLookInterpolationValue;
+    private Vector2 initialFreeLookLerpValues;
+    private float initialDistanceFromPoint;
+    private float currentDistanceFromPoint;
+    private Vector3 targetThirdPersonCameraAngles;
+    private Vector3 targetThirdPersonPlayerAngles;
+    private float adjustmentDistance = -8.0f; // Camera distance will change if there is a collision.
+    private Vector3 desiredCameraPosition = Vector3.zero; // Where the normal camera is meant to be (destination)
+    private Vector3 adjustedCameraPosition = Vector3.zero; // If colliding use this Camera position, otherwise use normal destination (adjustedDestination)
     private Vector3 initialFreeLookAngles;
     private Quaternion initialFreeLookRot;
     private Vector3 initialFreeLookPos;
@@ -65,19 +57,19 @@ public class PlayerLook : NetworkBehaviour
     private void Start()
     {
         this.freeLookInterpolationValue = 1.0f;
-        this.currentCamera = this.GetCurrentCamera();
+        this.currentCamera = this.CalculateCurrentCamera();
   
         Vector3 initialVector = (this.transform.position + Vector3.up) - this.thirdPersonCamera.transform.position;
         this.initialDistanceFromPoint = Vector3.Magnitude(initialVector);
         this.currentDistanceFromPoint = this.initialDistanceFromPoint;
-        this.targetThirdPersonPlayerAngles = this.transform.rotation.eulerAngles;
+        this.targetThirdPersonPlayerAngles = this.transform.localRotation.eulerAngles;
 
         collision.Initialise(this.thirdPersonCamera);
         collision.UpdateCameraClipPoints(this.thirdPersonCamera.transform.position, this.thirdPersonCamera.transform.rotation, ref collision.adjustedCameraClipPoints);
         collision.UpdateCameraClipPoints(this.desiredCameraPosition, this.thirdPersonCamera.transform.rotation, ref collision.desiredCameraClipPoints);
     }
 
-    void Update()
+    private void Update()
     {
         if (NetworkClient.isConnected && !this.isLocalPlayer)
             return;
@@ -97,7 +89,7 @@ public class PlayerLook : NetworkBehaviour
         if (NetworkClient.isConnected && !this.isLocalPlayer)
             return;
 
-        if (this.currentCameraView == View.ThirdPerson)
+        if (this.currentView == View.ThirdPerson)
         {
             Vector3 playerPos = this.transform.position;
             Vector3 cameraPos = this.thirdPersonCamera.transform.position;
@@ -126,7 +118,7 @@ public class PlayerLook : NetworkBehaviour
 
         if(viewButtonInput)
         {
-            View newView = (this.currentCameraView == View.FirstPerson) ? View.ThirdPerson : View.FirstPerson;
+            View newView = (this.currentView == View.FirstPerson) ? View.ThirdPerson : View.FirstPerson;
             if (newView == View.FirstPerson)
             {
                 this.thirdPersonCamera.gameObject.SetActive(false);
@@ -138,8 +130,8 @@ public class PlayerLook : NetworkBehaviour
                 this.thirdPersonCamera.gameObject.SetActive(true);
             }
 
-            this.currentCameraView = newView;
-            this.currentCamera = this.GetCurrentCamera();
+            this.currentView = newView;
+            this.currentCamera = this.CalculateCurrentCamera();
             this.currentCamera.transform.localRotation = Quaternion.Euler(Vector3.zero);
             this.currentDistanceFromPoint = this.initialDistanceFromPoint;
             this.targetThirdPersonCameraAngles = Vector3.zero;
@@ -154,9 +146,9 @@ public class PlayerLook : NetworkBehaviour
         }
     }
 
-    private Camera GetCurrentCamera()
+    private Camera CalculateCurrentCamera()
     {
-        return (this.currentCameraView == View.FirstPerson)
+        return (this.currentView == View.FirstPerson)
             ? this.firstPersonCamera : this.thirdPersonCamera;
     }
 
@@ -168,7 +160,7 @@ public class PlayerLook : NetworkBehaviour
         float horizInput = Input.GetAxisRaw("Mouse X");
         float horizAngle = horizInput * this.horizontalSpeedMultiplier * Time.deltaTime;
 
-        if (this.currentCameraView == View.FirstPerson)
+        if (this.currentView == View.FirstPerson)
             this.transform.Rotate(this.transform.up, horizAngle);
         else
         {
@@ -199,7 +191,7 @@ public class PlayerLook : NetworkBehaviour
         if (this.shouldLerpFromFreeLook)
         {
 
-            if (this.currentCameraView == View.FirstPerson)
+            if (this.currentView == View.FirstPerson)
             {
                 this.freeLookInterpolationValue += Time.deltaTime / this.timeToResetFromFreeLook;
                 this.freeLookInterpolationValue = Mathf.Clamp(this.freeLookInterpolationValue, 0.0f, 1.0f);
@@ -286,17 +278,17 @@ public class PlayerLook : NetworkBehaviour
             newRotationAngles.y = Utils.ConvertTo180Degrees(newRotationAngles.y + horizAngle);
 
             // Clamp within the specified range.
-            if(this.currentCameraView == View.FirstPerson)
+            if(this.currentView == View.FirstPerson)
                 newRotationAngles.y = Mathf.Clamp(newRotationAngles.y, this.firstPersonLimitsYaw.x, this.firstPersonLimitsYaw.y);
 
-            if(this.currentCameraView == View.FirstPerson)
+            if(this.currentView == View.FirstPerson)
                 camera.transform.localRotation = Quaternion.Euler(newRotationAngles);
             else
             {
                 // Lerp happens in HandleThirdPersonCamera (todo: should move?).
                 this.targetThirdPersonCameraAngles.y += horizAngle;
             }
-            if(this.currentCameraView == View.ThirdPerson)
+            if(this.currentView == View.ThirdPerson)
             {
                 float scrollInput = Input.GetAxisRaw("Mouse ScrollWheel");
                 this.currentDistanceFromPoint += -scrollInput * this.scrollSpeedMultiplier  * Time.deltaTime;
@@ -311,7 +303,7 @@ public class PlayerLook : NetworkBehaviour
         float vertInput = Input.GetAxisRaw("Mouse Y");
         float vertAngle = -vertInput * this.verticalSpeedMultiplier * Time.deltaTime;
               
-        if (this.currentCameraView == View.FirstPerson)
+        if (this.currentView == View.FirstPerson)
             this.HandleFirstPersonCamera(vertAngle);
         else
             this.HandleThirdPersonCamera(vertAngle);

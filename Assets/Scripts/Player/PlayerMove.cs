@@ -6,80 +6,62 @@ public class PlayerMove : MonoBehaviour
 {
     [SerializeField] private float speedMultiplier = 1.0f;
     [SerializeField] private float sprintMultiplier = 1.5f;
-    [SerializeField] private float sprintTimeToAccelerate = 1.0f;
-    [SerializeField] private float sprintTimeToDecelerate = 1.0f;
-    [SerializeField] private float maxSprintDuration = 1.0f;
-    [SerializeField] private float timeToRegenStanima = 1.0f;
+    [SerializeField] private float maxStanimaDuration = 5.0f;
+    [SerializeField] private float stanimaRegenDuration = 1.0f;
     [SerializeField] private float backwardsSpeedMultiplier = 0.5f;
     [SerializeField] private float crouchSpeedMultiplier = 0.75f;
-    [SerializeField] private float proneSpeedMultiplier = 0.5f;
-    [SerializeField] private float jumpHeight = 2.0f;
-    [SerializeField] private float crouchJumpHeight = 0.5f;
+    [SerializeField] private float standingJumpHeight = 1.0f;
+    [SerializeField] private float crouchedJumpHeight = 0.5f;
     [SerializeField] private Image stanimaFill = null;
     [SerializeField] private Animator animator = null;
 
     private readonly string sprintButtonName = "Fire3";
     private readonly string crouchButtonName = "Crouch";
-    private readonly string proneButtonName = "Prone";
     private readonly string jumpButtonName = "Jump";
-
-    private float sprintSpeedTarget;
-    private float initialLerpSprintMultiplier;
-    private float sprintInterpolationValue;
-    private bool shouldLerpSprint;
-
-    private float stanimaDurationLeft;
-    private float stanimaInterpolationValue;
-    private float initialLerpStanimaDuration;
-    private bool hasStanima;
-    private bool canUseStanima;
-
-    private bool isCrouching = false;
-    private bool isProne = false;
-    private bool isJumping = false;
-    private bool isWalking = false;
+    private readonly string vertAxisName = "Vertical";
+    private readonly string horizAxisName = "Horizontal";
+    private readonly string jumpParamName = "isJumping";
+    private readonly string fallParamName = "isFalling";
+    private readonly string crouchParamName = "isCrouching";
+    private readonly string runParamName = "isRunning";
+    private readonly string speedParamName = "Speed";
+    private readonly string directionParamName = "Direction";
+    private readonly float velocityMargin = 0.1f;
 
     private new Rigidbody rigidbody = null;
+    private float currStanimaDuration;
+    private float stanimaLerpT;
+    private bool isRunning = false;
+    private bool isCrouching = false;
+    private float crouchedJumpVelocity;
+    private float standingJumpVelocity;
 
-    private void Start()
+    private void Awake()
     {
-        this.rigidbody = this.GetComponent<Rigidbody>();
-    
-        this.sprintSpeedTarget = 1.0f;
-        this.sprintInterpolationValue = 1.0f;
-        this.shouldLerpSprint = false;
-        this.ChangeStanima(this.maxSprintDuration);
-        this.stanimaInterpolationValue = 1.0f;
-        this.hasStanima = (this.stanimaDurationLeft > 0.0f);
-        this.canUseStanima = true;
+        this.rigidbody = this.GetComponent<Rigidbody>();        
+
+        /* Physics Equations:
+         * FROM maxHeight = (initialVelocity^2) / (2g)
+         * TO velocity = Sqrt(maxHeight * -2g)  
+         */
+        this.crouchedJumpVelocity = Mathf.Sqrt(this.crouchedJumpHeight * (-2.0f * Physics.gravity.y));
+        this.standingJumpVelocity = Mathf.Sqrt(this.standingJumpHeight * (-2.0f * Physics.gravity.y));
+
+        this.ChangeStanima(this.maxStanimaDuration);
     }
 
     private void Update()
     {
-        // Handle the sprint state changing.
-        if(Input.GetButtonDown(this.sprintButtonName))
-            this.OnSprintInputChanged(true);
-        else if(Input.GetButtonUp(this.sprintButtonName))
-            this.OnSprintInputChanged(false);
+        this.isCrouching = Input.GetButton(this.crouchButtonName);
+        this.isRunning = Input.GetButton(this.sprintButtonName);
 
-        this.RegenStanima();
-        this.HandleStances();
-        this.HandleJump();
+        if(Input.GetButton(this.jumpButtonName))
+            this.TryJump();
 
-        // Animations
-        float vertInput = Input.GetAxis("Vertical");
-        this.animator.SetFloat("Speed", vertInput);
-        this.animator.SetFloat("Direction", Input.GetAxis("Horizontal"));
-
-        bool isRunning = (this.GetCurrentSprintMultiplier(Time.deltaTime) > 1.0f);
-        this.animator.SetBool("isRunning", isRunning);
-
-        float velocityY = this.rigidbody.velocity.y;
-        if (this.isJumping)
-        {
-            this.animator.SetBool("isJumping", (velocityY >= 0.0f));
-            this.animator.SetBool("isFalling", (velocityY < 0.0f));
-        }  
+        this.HandleAnimator();
+    
+        if(this.CanRegenStanima())
+            this.RegenStanima();
     }
 
     private void FixedUpdate()
@@ -88,179 +70,76 @@ public class PlayerMove : MonoBehaviour
         Vector3 translationVector = this.CalculateTranslationVector(Time.fixedDeltaTime);
         this.rigidbody.MovePosition(this.rigidbody.position + translationVector);
 
-        if (translationVector != Vector3.zero && !this.isWalking)
-            this.isWalking = true;
-        else if (translationVector == Vector3.zero && this.isWalking)
-            this.isWalking = false;
+        if(this.isRunning && translationVector.magnitude > 0.0f)
+            this.ChangeStanima(Mathf.Max(this.currStanimaDuration - Time.fixedDeltaTime, 0.0f));
     }
 
-    private void ChangeStanima(float newValue)
+    private void HandleAnimator()
     {
-        this.stanimaDurationLeft = newValue;
-        this.stanimaFill.fillAmount = this.stanimaDurationLeft / this.maxSprintDuration;
-    }
-
-    private void HandleJump()
-    {
-        if (this.isJumping)
-        {
-            bool onGround = Utils.Approximately(this.rigidbody.velocity.y, 0.0f, 0.001f);
-            if (onGround)
-            {
-                this.animator.SetBool("isFalling", false);
-                this.isJumping = false;
-            }
-        }
-
-        if (this.isProne)
+        if(this.animator == null)
             return;
 
-        if (!this.isJumping && Input.GetButton(this.jumpButtonName))
-        {
-            float jumpHeight = (this.isCrouching) ? this.crouchJumpHeight : this.jumpHeight;
-        
-            // maxHeight = (initialVelocity^2) / (2g)
-            // velocity = Sqrt(maxHeight * -2g)
-            Vector3 newVelocity = this.rigidbody.velocity;
-            newVelocity.y += Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
-            this.rigidbody.velocity = newVelocity;
+        this.animator.SetFloat(this.speedParamName, Input.GetAxis(this.vertAxisName));
+        this.animator.SetFloat(this.directionParamName, Input.GetAxis(this.horizAxisName));
 
-            this.isJumping = true;
-        }
+        this.animator.SetBool(this.crouchParamName, this.isCrouching);
+        this.animator.SetBool(this.runParamName, this.isRunning);
+
+        float yVelocity = this.rigidbody.velocity.y;
+        this.animator.SetBool(this.jumpParamName, (yVelocity > this.velocityMargin));
+        this.animator.SetBool(this.fallParamName, (yVelocity < -this.velocityMargin));
     }
 
-    private void HandleStances()
-    {
-        // Handle Crouching, cant go from prone to crouch.
-        if (!this.isProne)
-        {
-            this.isCrouching = Input.GetButton(this.crouchButtonName);
-            this.animator.SetBool("isCrouching", this.isCrouching);
-        }
-
-        // Handle Prone, can go from anything to prone.
-        if (!this.isJumping)
-        {
-            this.isProne = Input.GetButton(this.proneButtonName);
-        }
-
-        // If both in both stances must be in prone and not crouch.
-        if (this.isProne && this.isCrouching)
-            this.isCrouching = false;
-    }
-
-    /**
-     * Calculates the translation vector using the
-     * user input (which also includes sprinting).
-     * */
     private Vector3 CalculateTranslationVector(float dt)
     {
-        Vector3 inputVector = Vector3.zero;
-        inputVector.x = Input.GetAxis("Horizontal");
-        inputVector.z = Input.GetAxis("Vertical");
-
-        float currentSprintSpeedMultiplier = this.GetCurrentSprintMultiplier(dt);
-        float movementSpeed = this.speedMultiplier * currentSprintSpeedMultiplier;
-
-        if (inputVector.z < 0.0f)
+        float movementSpeed = this.speedMultiplier;
+        Vector3 inputVector = new Vector3(Input.GetAxis(this.horizAxisName),
+            0.0f, Input.GetAxis(this.vertAxisName));
+     
+        if(inputVector.z < 0.0f)
             movementSpeed *= this.backwardsSpeedMultiplier;
-
-        if (this.isCrouching)
+        if(this.isCrouching)
             movementSpeed *= this.crouchSpeedMultiplier;
-        if (this.isProne)
-            movementSpeed *= this.proneSpeedMultiplier;
+        if(this.isRunning)
+            movementSpeed *= this.sprintMultiplier;
 
         Quaternion movementDirection = Quaternion.Euler(0, this.transform.eulerAngles.y, 0);
-
         // Clamp used to solve issue where diagonal movement is faster.
         return Vector3.ClampMagnitude(movementDirection * inputVector, 1.0f) * movementSpeed * dt;
     }
 
-    /**
-     * When the sprint input is pressed or let go of, reset the values so
-     * that the lerp can start from the beginning.
-     * */
-    private void OnSprintInputChanged(bool isDown)
+    private void TryJump()
     {
-        this.sprintInterpolationValue = 0.0f;
-        this.initialLerpSprintMultiplier = (isDown || !this.hasStanima) ? 1.0f : this.sprintMultiplier;
-        this.shouldLerpSprint = true;
+        // If not on the ground then we can't jump.
+        if(!Utils.Approximately(this.rigidbody.velocity.y, 0.0f, this.velocityMargin))
+            return;
 
-        if(isDown)
-        {
-            this.canUseStanima = true;
-        }
-
-        if (!isDown)
-        {
-            this.stanimaInterpolationValue = this.stanimaDurationLeft / this.maxSprintDuration;
-            this.initialLerpStanimaDuration = this.stanimaDurationLeft;
-
-            if (this.stanimaInterpolationValue >= 1.0f)
-                this.canUseStanima = true;
-        }
+        Vector3 newVelocity = this.rigidbody.velocity;
+        newVelocity.y += (this.isCrouching) ? this.crouchedJumpVelocity : this.standingJumpVelocity;
+        this.rigidbody.velocity = newVelocity;
     }
 
-    /**
-     * Calculate the current sprint speed along an interpolator.
-     * */
-    private float GetCurrentSprintMultiplier(float dt)
+    #region Stanima
+    private bool CanRegenStanima()
     {
-        if (!this.shouldLerpSprint)
-            return this.sprintSpeedTarget;
-
-        bool isSprintInput = Input.GetButton(this.sprintButtonName);
-
-        // Reduce stanima.
-        Vector3 inputVector = Vector3.zero;
-        inputVector.x = Input.GetAxis("Horizontal");
-        inputVector.z = Input.GetAxis("Vertical");
-
-        if (isSprintInput && this.canUseStanima && inputVector.magnitude > 0.0f)
-        {
-            if (this.stanimaDurationLeft > 0.0f)
-                this.ChangeStanima(Mathf.Max(this.stanimaDurationLeft - dt, 0.0f));
-
-            this.hasStanima = (this.stanimaDurationLeft > 0.0f);
-            if (!this.hasStanima)
-            {
-                this.stanimaInterpolationValue = this.stanimaDurationLeft / this.maxSprintDuration;
-                this.initialLerpStanimaDuration = this.stanimaDurationLeft;
-                this.canUseStanima = false;
-            }
-        }
-
-        // Adjust variables that are specific to acceleration/deceleration.
-        float sprintTimeToLerp = (isSprintInput && this.hasStanima) ? this.sprintTimeToAccelerate 
-            : this.sprintTimeToDecelerate;
-        this.sprintSpeedTarget = (isSprintInput && this.hasStanima) ? this.sprintMultiplier : 1.0f;
-
-        // Increase the sprint speed interpolation value.
-        this.sprintInterpolationValue += dt / sprintTimeToLerp;
-
-        if (this.sprintInterpolationValue > 1.0f)
-        {
-            this.sprintInterpolationValue = 1.0f;
-            this.shouldLerpSprint = true;
-        }
-
-        // Return the current sprint speed along the interpolator.
-        return Mathf.Lerp(this.initialLerpSprintMultiplier, this.sprintSpeedTarget,
-            this.sprintInterpolationValue);
+        return (!Input.GetButton(this.sprintButtonName) && 
+            this.currStanimaDuration < this.maxStanimaDuration);
     }
 
     private void RegenStanima()
     {
-        if(Input.GetButton(this.sprintButtonName))
-            return;
-
-        if((this.stanimaDurationLeft < this.maxSprintDuration) || this.canUseStanima == false)
-        {
-            this.stanimaInterpolationValue = Mathf.Min(this.stanimaInterpolationValue + (Time.deltaTime
-                / this.timeToRegenStanima), 1.0f);
-
-            this.ChangeStanima(Mathf.Lerp(this.initialLerpStanimaDuration, this.maxSprintDuration,
-                this.stanimaInterpolationValue));
-        }
+        this.stanimaLerpT = Mathf.Clamp(this.stanimaLerpT + (Time.deltaTime / this.stanimaRegenDuration), 0.0f, 1.0f);
+        this.ChangeStanima(Mathf.Lerp(0.0f, this.maxStanimaDuration, this.stanimaLerpT));
     }
+
+    private void ChangeStanima(float stanima)
+    {
+        this.currStanimaDuration = stanima;
+
+        this.stanimaLerpT = this.currStanimaDuration / this.maxStanimaDuration;
+
+        if(this.stanimaFill != null)
+            this.stanimaFill.fillAmount = this.stanimaLerpT;
+    }
+    #endregion   
 }

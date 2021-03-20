@@ -21,7 +21,7 @@ public class Flashlight : NetworkBehaviour
         GameObject flashlight = GameObject.Instantiate(this.flashLightPrefab);
         this.flashlightAnimator = flashlight.GetComponent<Animator>();
         this.flashlightTransform = flashlight.transform;
-        this.UpdateFlashlightParent(this.playerLook.currentCameraView);
+        this.UpdateFlashlightParent(this.playerLook.currentView);
 
         // Send flash state to other players.
         if(NetworkClient.isConnected && this.isLocalPlayer)

@@ -5,7 +5,8 @@ using Mirror;
 public class PlayerInteract : NetworkBehaviour
 {
     [SerializeField] private LayerMask interactLayer;
-    [SerializeField] private float raycastDistance = 3.5f;
+    [SerializeField] private float firstPersonRayDistance = 3.5f;
+    [SerializeField] private float thirdPersonRayDistance = 5.0f;
 
     private PlayerLook playerLook;
     private Moveable currentMoveable = null;
@@ -20,8 +21,11 @@ public class PlayerInteract : NetworkBehaviour
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
             Transform cameraTransform = this.playerLook.currentCamera.transform;
+            float rayDistance = (this.playerLook.currentView == PlayerLook.View.FirstPerson)
+                ? this.firstPersonRayDistance : this.thirdPersonRayDistance;
+
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-            if(Physics.Raycast(ray, out RaycastHit hit, this.raycastDistance, this.interactLayer))
+            if(Physics.Raycast(ray, out RaycastHit hit, rayDistance, this.interactLayer))
             {
                 // Interact.
                 if(hit.transform.gameObject.GetComponent<Door>() != null ||
