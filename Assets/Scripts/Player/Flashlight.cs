@@ -9,6 +9,9 @@ public class Flashlight : NetworkBehaviour
     [SerializeField] private Camera thirdPersonCamera = null;
     [SerializeField] private bool currentVisibility = false;
 
+    private readonly string flashlightButtonName = "Flashlight";
+    private readonly string visibilityParamName = "Visibility";
+
     private Animator flashlightAnimator = null;
     private Transform flashlightTransform = null;
     private PlayerLook playerLook = null;
@@ -33,7 +36,7 @@ public class Flashlight : NetworkBehaviour
         if(NetworkClient.isConnected && !this.isLocalPlayer)
             return;
 
-        if(Input.GetButtonDown("Flashlight"))
+        if(Input.GetButtonDown(this.flashlightButtonName))
             this.SendChangeVisibility(!this.currentVisibility);
 
         // In thirdperson, only move the flashlight when not free looking.
@@ -45,7 +48,7 @@ public class Flashlight : NetworkBehaviour
     {
         this.UpdateFlashlightParent(newView);
 
-        this.flashlightAnimator.SetBool("Visibility", this.currentVisibility);
+        this.flashlightAnimator.SetBool(this.visibilityParamName, this.currentVisibility);
 
         if(this.flashlightAnimator.isActiveAndEnabled)
             this.flashlightAnimator.Play(((this.currentVisibility) ? "On" : "Off") + "Idle");
@@ -62,7 +65,7 @@ public class Flashlight : NetworkBehaviour
 
     private void SendChangeVisibility(bool visibility)
     {
-        if (NetworkClient.isConnected)
+        if(NetworkClient.isConnected)
             this.CmdSendChangeVisibility(visibility);
         else
             this.ChangeVisibility(visibility);
@@ -71,7 +74,7 @@ public class Flashlight : NetworkBehaviour
     private void ChangeVisibility(bool visibility)
     {
         this.flashlightTransform.gameObject.SetActive(visibility);
-        this.flashlightAnimator.SetBool("Visibility", visibility);
+        this.flashlightAnimator.SetBool(this.visibilityParamName, visibility);
         this.currentVisibility = visibility;
     }
 
