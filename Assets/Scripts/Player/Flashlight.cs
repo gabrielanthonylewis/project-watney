@@ -40,7 +40,7 @@ public class Flashlight : NetworkBehaviour
             this.SendChangeVisibility(!this.currentVisibility);
 
         // In thirdperson, only move the flashlight when not free looking.
-        if(!this.playerLook.isFreeLooking && !this.playerLook.shouldLerpFromFreeLook)
+        if(!this.playerLook.isFreeLooking && !this.playerLook.shouldReturnFromFreeLook)
             this.thirdPersonCameraHolder.rotation = this.thirdPersonCamera.transform.rotation;
     }
 

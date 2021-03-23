@@ -11,7 +11,7 @@ public class PlayerLook : MonoBehaviour
     public View currentView = View.FirstPerson;
     public Camera currentCamera;
     public bool isFreeLooking = false;
-    public bool shouldLerpFromFreeLook = false;
+    public bool shouldReturnFromFreeLook = false;
 
     public delegate void ChangeViewDelegate(View newView);
     protected ChangeViewDelegate changeViewCallback;
@@ -25,8 +25,8 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private float timeToResetFromFreeLookThirdPerson = 0.5f;
     [SerializeField] private Camera firstPersonCamera = null;
     [SerializeField] private Camera thirdPersonCamera = null;
-    [SerializeField] private float maxScrollDistanceFromPoint = 20;
-    [SerializeField] private float minScrollDistanceFromPoint = 1;
+    [SerializeField] private float maxZoomDistance = 20;
+    [SerializeField] private float minZoomDistance = 1;
     [SerializeField] private float scrollSpeedMultiplier = 5.0f;
     [SerializeField] private float thirdPersonLerpMultiplier = 10.0f;
     [SerializeField] private CameraCollisionDetection collision = new CameraCollisionDetection();
@@ -38,18 +38,20 @@ public class PlayerLook : MonoBehaviour
     private readonly string changeViewButtonName = "ChangeView";
     private readonly string horizAxisName = "Mouse X";
     private readonly string vertAxisName = "Mouse Y";
+    private readonly string zoomAxisName = "Mouse ScrollWheel";
 
-    private float freeLookInterpolationValue;
-    private Vector2 initialFreeLookLerpValues;
+    private float freeLookReturnLerpT;
+    private Vector3 initialFreeLookAngles;
+    private Vector2 finalFreeLookAngles;
+
     private float initialDistanceFromPoint;
-    private float currentDistanceFromPoint;
+    private float currZoomDistance;
+    
     private Vector3 targetThirdPersonCameraAngles;
+    
     private float adjustmentDistance = -8.0f; // Camera distance will change if there is a collision.
     private Vector3 desiredCameraPosition = Vector3.zero; // Where the normal camera is meant to be (destination)
     private Vector3 adjustedCameraPosition = Vector3.zero; // If colliding use this Camera position, otherwise use normal destination (adjustedDestination)
-    private Vector3 initialFreeLookAngles;
-    private Quaternion initialFreeLookRot;
-    private Vector3 initialFreeLookPos;
 
     public void AddChangeViewCallback(ChangeViewDelegate myCallback)
     {
@@ -58,13 +60,13 @@ public class PlayerLook : MonoBehaviour
 
     private void Start()
     {
-        this.freeLookInterpolationValue = 1.0f;
-        this.currentCamera = (this.currentView == View.FirstPerson)
-            ? this.firstPersonCamera : this.thirdPersonCamera;
+        this.freeLookReturnLerpT = 1.0f;
+        this.currentCamera = (this.currentView == View.FirstPerson) ?
+            this.firstPersonCamera : this.thirdPersonCamera;
   
         Vector3 initialVector = (this.transform.position + Vector3.up) - this.thirdPersonCamera.transform.position;
         this.initialDistanceFromPoint = Vector3.Magnitude(initialVector);
-        this.currentDistanceFromPoint = this.initialDistanceFromPoint;
+        this.currZoomDistance = this.initialDistanceFromPoint;
 
         this.collision.Initialise(this.thirdPersonCamera);
         this.collision.UpdateCameraClipPoints(this.thirdPersonCamera.transform.position,
@@ -80,7 +82,7 @@ public class PlayerLook : MonoBehaviour
 
         this.HandleFreeLook(this.currentCamera);
 
-        if(!this.isFreeLooking && !this.shouldLerpFromFreeLook)
+        if(!this.isFreeLooking && !this.shouldReturnFromFreeLook)
             this.HandlePlayerRotation();
 
         this.HandleCameraRotation();
@@ -125,14 +127,15 @@ public class PlayerLook : MonoBehaviour
     {
         // Reset
         this.currentCamera.transform.localRotation = Quaternion.Euler(Vector3.zero);
-        this.currentDistanceFromPoint = this.initialDistanceFromPoint;
+        this.currZoomDistance = this.initialDistanceFromPoint;
         this.targetThirdPersonCameraAngles = Vector3.zero;
         this.thirdPersonCamera.transform.localPosition = 
             this.CalculateThirdPersonPos(Quaternion.Euler(this.targetThirdPersonCameraAngles));
 
         // Switch
         this.currentView = (this.currentView == View.FirstPerson) ? View.ThirdPerson : View.FirstPerson;
-        this.currentCamera = (this.currentView == View.FirstPerson) ? this.firstPersonCamera : this.thirdPersonCamera;
+        this.currentCamera = (this.currentView == View.FirstPerson) ?
+            this.firstPersonCamera : this.thirdPersonCamera;
         this.firstPersonCamera.gameObject.SetActive(this.currentView == View.FirstPerson);
         this.thirdPersonCamera.gameObject.SetActive(this.currentView == View.ThirdPerson);
         this.changeViewCallback.Invoke(this.currentView);
@@ -151,10 +154,15 @@ public class PlayerLook : MonoBehaviour
     {
         float vertAngle = -Input.GetAxisRaw(this.vertAxisName)
             * this.verticalSpeedMultiplier * Time.deltaTime;
+
+        /* If returning then we want to update the rotation but now
+         * allow the player to change it. */
+        if(this.shouldReturnFromFreeLook)
+            vertAngle = 0.0f;
               
         if(this.currentView == View.FirstPerson)
             this.HandleFirstPersonCamera(vertAngle);
-        else if(this.currentView == View.ThirdPerson && !this.shouldLerpFromFreeLook)
+        else
             this.HandleThirdPersonCamera(vertAngle);
     }
 
@@ -179,6 +187,7 @@ public class PlayerLook : MonoBehaviour
 
         Quaternion newRotation = Quaternion.Euler(this.targetThirdPersonCameraAngles);
 
+//!!!!TODO: the lerp is doing the quickest route which does weird stuff, I need to get rid of all Quaternion Lerps.. but Im not doing that on First person? unless it's not using that?
         this.thirdPersonCamera.transform.localRotation = Quaternion.Slerp(this.thirdPersonCamera.transform.localRotation,
             newRotation, this.thirdPersonLerpMultiplier * Time.deltaTime);
 
@@ -188,10 +197,10 @@ public class PlayerLook : MonoBehaviour
 
     private Vector3 CalculateThirdPersonPos(Quaternion rotation)
     {
-        Vector3 negDistance = new Vector3(0.0f, 0.0f, -this.currentDistanceFromPoint);
+        Vector3 negDistance = new Vector3(0.0f, 0.0f, -this.currZoomDistance);
         this.desiredCameraPosition = rotation * negDistance + Vector3.up;
 
-        Vector3 negDistance2 = new Vector3(0, 0, -this.adjustmentDistance + this.safteyDistance);
+        Vector3 negDistance2 = new Vector3(0.0f, 0.0f, -this.adjustmentDistance + this.safteyDistance);
         this.adjustedCameraPosition = rotation * negDistance2 + Vector3.up;
 
         return (collision.isColliding) ? this.adjustedCameraPosition : this.desiredCameraPosition;
@@ -199,107 +208,73 @@ public class PlayerLook : MonoBehaviour
 
     private void HandleFreeLook(Camera camera)
     {
-        // Free look stopped.
-        if (this.isFreeLooking && Input.GetButtonUp(this.freeLookButtonName))
-        {
-            this.shouldLerpFromFreeLook = true;
-            this.initialFreeLookLerpValues.x = Utils.ConvertTo180Degrees(camera.transform.localRotation.eulerAngles.x);
-            this.initialFreeLookLerpValues.y = Utils.ConvertTo180Degrees(camera.transform.localRotation.eulerAngles.y);
-            this.initialFreeLookPos = camera.transform.localPosition;
-            this.initialFreeLookRot = camera.transform.localRotation;
-            this.freeLookInterpolationValue = 0;
-        }
+        // Start FreeLooking.
+        if(Input.GetButtonDown(this.freeLookButtonName))
+            this.initialFreeLookAngles = camera.transform.localRotation.eulerAngles;
 
-        // Lerp back to center of the screen.
-//!!!!TODO: Move this stuff into a HandleFirstPerson and HandleThirdperson free look functions
-        if (this.shouldLerpFromFreeLook)
-        {
-            if (this.currentView == View.FirstPerson)
-            {
-                this.freeLookInterpolationValue += Time.deltaTime / this.timeToResetFromFreeLook;
-                this.freeLookInterpolationValue = Mathf.Clamp(this.freeLookInterpolationValue, 0.0f, 1.0f);
-
-                Vector3 newRotationAngles = camera.transform.localRotation.eulerAngles;
-                newRotationAngles.y = Mathf.Lerp(this.initialFreeLookLerpValues.y, 0.0f, this.freeLookInterpolationValue);
-
-
-                newRotationAngles.x = Mathf.Lerp(this.initialFreeLookLerpValues.x, 0.0f, this.freeLookInterpolationValue);
-                if (Utils.Approximately(newRotationAngles.y, 0.0f, 0.01f))
-                {
-                    newRotationAngles.y = 0.0f;
-                    this.shouldLerpFromFreeLook = false;
-                }
-
-                camera.transform.localRotation = Quaternion.Euler(newRotationAngles);
-            }
-            else
-            {
-                this.freeLookInterpolationValue += Time.deltaTime / this.timeToResetFromFreeLookThirdPerson;
-                this.freeLookInterpolationValue = Mathf.Clamp(this.freeLookInterpolationValue, 0.0f, 1.0f);
-
-                Vector3 newRotationAngles = camera.transform.localRotation.eulerAngles;
-                newRotationAngles.y = Mathf.Lerp(this.initialFreeLookLerpValues.y, 0.0f, this.freeLookInterpolationValue);
-                newRotationAngles.x = Mathf.Lerp(this.initialFreeLookLerpValues.x, this.initialFreeLookAngles.x, this.freeLookInterpolationValue);
-
-                bool cameraYCorrect = false;
-                if (Utils.Approximately(camera.transform.localRotation.eulerAngles.y, 0.0f, 0.01f)) // 0.00015f for accruacy but locks camera as too precise 
-                    cameraYCorrect = true; 
- 
-                bool cameraXCorrect = false;
-                if (Utils.Approximately(camera.transform.localRotation.eulerAngles.x, this.initialFreeLookAngles.x, 0.01f)) // 0.00015f for accruacy but locks camera as too precise 
-                    cameraXCorrect = true;
-
-                if (cameraXCorrect && cameraYCorrect)
-                {
-                    newRotationAngles = this.initialFreeLookAngles;
-                    // newRotationAngles.y = 0.0f;
-                    this.shouldLerpFromFreeLook = false;
-                }
-
-                this.targetThirdPersonCameraAngles = newRotationAngles;
-                this.targetThirdPersonCameraAngles.x = Utils.ClampAngle(this.targetThirdPersonCameraAngles.x, 
-                    this.thirdPersonLimitsPitch.x, this.thirdPersonLimitsPitch.y);
-                this.targetThirdPersonCameraAngles.z = 0.0f;
-
-                Quaternion newRotation = Quaternion.Euler(this.targetThirdPersonCameraAngles);
-                camera.transform.localRotation = Quaternion.Slerp(this.initialFreeLookRot,
-                    newRotation, this.freeLookInterpolationValue);
-
-                camera.transform.localPosition = Vector3.Lerp(this.initialFreeLookPos,
-                    this.CalculateThirdPersonPos(newRotation), this.freeLookInterpolationValue);
-            }
-        }
-
-        bool freeLookInput = Input.GetButton(this.freeLookButtonName);
-        if(!this.isFreeLooking && freeLookInput)
-            this.initialFreeLookAngles = camera.transform.localRotation.eulerAngles; 
-
-        this.isFreeLooking = freeLookInput;
+        // Actively FreeLooking.
+        this.isFreeLooking = Input.GetButton(this.freeLookButtonName);
         if(this.isFreeLooking)
         {
-            float horizInput = Input.GetAxisRaw(this.horizAxisName);
-            float horizAngle = horizInput * this.horizontalSpeedMultiplier * Time.deltaTime;
-
-            Vector3 newRotationAngles = camera.transform.localRotation.eulerAngles;
-            newRotationAngles.z = 0.0f; // Lock the roll.
-            newRotationAngles.y = Utils.ConvertTo180Degrees(newRotationAngles.y + horizAngle);
-
-            // Clamp within the specified range.
-            if(this.currentView == View.FirstPerson)
-                newRotationAngles.y = Mathf.Clamp(newRotationAngles.y, this.firstPersonLimitsYaw.x, this.firstPersonLimitsYaw.y);
-
-            if(this.currentView == View.FirstPerson)
-                camera.transform.localRotation = Quaternion.Euler(newRotationAngles);
-            else
-                this.targetThirdPersonCameraAngles.y += horizAngle;
+            this.HandleHorizontalRotation(camera);
 
             if(this.currentView == View.ThirdPerson)
-            {
-                float scrollInput = Input.GetAxisRaw("Mouse ScrollWheel");
-                this.currentDistanceFromPoint += -scrollInput * this.scrollSpeedMultiplier  * Time.deltaTime;
-                this.currentDistanceFromPoint = Mathf.Clamp(this.currentDistanceFromPoint, this.minScrollDistanceFromPoint,
-                    this.maxScrollDistanceFromPoint);
-            }
+                this.HandleZoomDistance();
         }
+
+        // Stop FreeLooking.
+        if(Input.GetButtonUp(this.freeLookButtonName))
+        {
+            this.shouldReturnFromFreeLook = true;
+            this.finalFreeLookAngles = camera.transform.localRotation.eulerAngles;
+            this.freeLookReturnLerpT = 0.0f;
+        }
+
+        // If stopped then lerp back.
+        if(this.shouldReturnFromFreeLook)
+            this.HandleFreeLookReturn(camera);
+    }
+
+    private void HandleHorizontalRotation(Camera camera)
+    {
+        float horizAngle = Input.GetAxisRaw(this.horizAxisName)
+            * this.horizontalSpeedMultiplier * Time.deltaTime;
+
+        if(this.currentView == View.FirstPerson)
+        { 
+            Vector3 newRotationAngles = camera.transform.localRotation.eulerAngles;
+            newRotationAngles.y = Utils.ClampAngle(newRotationAngles.y + horizAngle,
+                this.firstPersonLimitsYaw.x, this.firstPersonLimitsYaw.y);
+            newRotationAngles.z = 0.0f; // Lock the roll.
+
+            camera.transform.localRotation = Quaternion.Euler(newRotationAngles);
+        }    
+        else
+            this.targetThirdPersonCameraAngles.y += horizAngle;
+    }
+
+    private void HandleZoomDistance()
+    {
+        float newDistance = this.currZoomDistance - Input.GetAxisRaw(this.zoomAxisName)
+            * this.scrollSpeedMultiplier * Time.deltaTime;
+        this.currZoomDistance = Mathf.Clamp(newDistance, this.minZoomDistance, this.maxZoomDistance);
+    }
+
+    private void HandleFreeLookReturn(Camera camera)
+    {
+        float duration = (this.currentView == View.FirstPerson) ?  this.timeToResetFromFreeLook : this.timeToResetFromFreeLookThirdPerson;
+        this.freeLookReturnLerpT = Mathf.Clamp(
+            this.freeLookReturnLerpT + (Time.deltaTime / duration), 0.0f, 1.0f);
+
+        Vector3 newRotationAngles = Vector3.Lerp(this.finalFreeLookAngles,
+            this.initialFreeLookAngles, this.freeLookReturnLerpT);
+
+        if (this.currentView == View.FirstPerson)
+            camera.transform.localRotation = Quaternion.Euler(newRotationAngles);
+        else
+            this.targetThirdPersonCameraAngles = newRotationAngles;
+
+        if(this.freeLookReturnLerpT == 1.0f)
+            this.shouldReturnFromFreeLook = false;
     }
 }

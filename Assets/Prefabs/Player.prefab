@@ -2690,7 +2690,7 @@ MonoBehaviour:
   currentView: 0
   currentCamera: {fileID: 0}
   isFreeLooking: 0
-  shouldLerpFromFreeLook: 0
+  shouldReturnFromFreeLook: 0
   horizontalSpeedMultiplier: 125
   verticalSpeedMultiplier: 125
   firstPersonLimitsPitch: {x: -82, y: 82}
@@ -2700,8 +2700,8 @@ MonoBehaviour:
   timeToResetFromFreeLookThirdPerson: 0.1
   firstPersonCamera: {fileID: 7027099752323050545}
   thirdPersonCamera: {fileID: 809893300}
-  maxScrollDistanceFromPoint: 10
-  minScrollDistanceFromPoint: 1.5
+  maxZoomDistance: 10
+  minZoomDistance: 1.5
   scrollSpeedMultiplier: 500
   thirdPersonLerpMultiplier: 15
   collision:
