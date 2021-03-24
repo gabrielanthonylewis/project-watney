@@ -53,7 +53,7 @@ public class PlayerMove : MonoBehaviour
     private void Update()
     {
         this.isCrouching = Input.GetButton(this.crouchButtonName);
-        this.isRunning = Input.GetButton(this.sprintButtonName);
+        this.isRunning = Input.GetButton(this.sprintButtonName) && this.currStanimaDuration > 0.0f;
 
         if(Input.GetButton(this.jumpButtonName))
             this.TryJump();

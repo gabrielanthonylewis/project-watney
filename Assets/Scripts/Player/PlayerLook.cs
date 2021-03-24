@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using Mirror;
 
-public class PlayerLook : MonoBehaviour
+public class PlayerLook : NetworkBehaviour
 {
     public enum View
     {
@@ -71,6 +72,9 @@ public class PlayerLook : MonoBehaviour
 
     private void Update()
     {
+        if(NetworkClient.isConnected && !this.isLocalPlayer)
+            return;
+
         if(Input.GetButtonDown(this.changeViewButtonName))
             this.SwitchView();
 
@@ -84,6 +88,9 @@ public class PlayerLook : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(NetworkClient.isConnected && !this.isLocalPlayer)
+            return;
+
         if(this.currentView != View.ThirdPerson)
             return;
 

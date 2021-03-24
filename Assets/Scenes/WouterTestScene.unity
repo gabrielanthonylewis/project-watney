@@ -741,17 +741,17 @@ PrefabInstance:
     - target: {fileID: 4541176713080554884, guid: 945348b12ee76b24fbbd370f04db5041,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -50.739
+      value: -50.747
       objectReference: {fileID: 0}
     - target: {fileID: 4541176713080554884, guid: 945348b12ee76b24fbbd370f04db5041,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 32.495
+      value: 32.592
       objectReference: {fileID: 0}
     - target: {fileID: 4541176713080554884, guid: 945348b12ee76b24fbbd370f04db5041,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -91.784
+      value: -91.775
       objectReference: {fileID: 0}
     - target: {fileID: 4541176713080554884, guid: 945348b12ee76b24fbbd370f04db5041,
         type: 3}
@@ -4662,7 +4662,7 @@ PrefabInstance:
     - target: {fileID: 4541176713080554884, guid: 945348b12ee76b24fbbd370f04db5041,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 32.601
+      value: 32.73
       objectReference: {fileID: 0}
     - target: {fileID: 4541176713080554884, guid: 945348b12ee76b24fbbd370f04db5041,
         type: 3}
@@ -5426,19 +5426,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: -2.2844734
+      value: 1.5e-44
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 8.17e-43
+      value: 1.7733488e+22
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: -2.2835922
+      value: 9.317134e-39
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 8.17e-43
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1919845326, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_Version

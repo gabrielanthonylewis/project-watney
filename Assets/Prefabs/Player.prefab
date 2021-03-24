@@ -2671,7 +2671,6 @@ MonoBehaviour:
   - {fileID: 842303647}
   - {fileID: 1082192083}
   - {fileID: 54249169}
-  - {fileID: 54249168}
   objectsToDisable:
   - {fileID: 1911679036}
   - {fileID: 511033057}
@@ -2687,6 +2686,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 316a8a434f1bf76429982013e1c3a06c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   horizontalSpeedMultiplier: 125
   verticalSpeedMultiplier: 125
   firstPersonLimitsPitch: {x: -82, y: 82}

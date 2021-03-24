@@ -98,7 +98,7 @@ public class PlayerInteract : NetworkBehaviour
     private void PickupMoveable(GameObject moveableObj, GameObject interactor)
     {
         moveableObj.GetComponent<Moveable>().Pickup(interactor.GetComponent<PlayerLook>().GetCurrentCamera().transform,
-            Vector3.zero, true, true, interactor.GetComponent<PlayerInteract>().OnMoveablePickedUpByOther);
+            Vector3.zero, true, false, interactor.GetComponent<PlayerInteract>().OnMoveablePickedUpByOther);
     }
 
     private void OnMoveablePickedUpByOther()
