@@ -1080,7 +1080,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!65 &251844380
 BoxCollider:
@@ -1114,7 +1114,7 @@ MeshRenderer:
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -8848810374240701247, guid: 6e3944f493b989147aa6b3e9dfbe2bae, type: 3}
+  - {fileID: 2100000, guid: 8ce9cb7edd78c754cb4f56c9e509b08b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5426,19 +5426,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 0
+      value: -2.2844734
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 0
+      value: 8.17e-43
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 2.3717297e+37
+      value: -2.2835922
       objectReference: {fileID: 0}
     - target: {fileID: 1799102686, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 4.5905e-41
+      value: 8.17e-43
       objectReference: {fileID: 0}
     - target: {fileID: 1919845326, guid: 3ad4b6067c1add94cb116518562b64a5, type: 3}
       propertyPath: m_Version
