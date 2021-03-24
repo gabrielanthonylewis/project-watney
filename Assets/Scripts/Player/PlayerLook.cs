@@ -41,8 +41,8 @@ public class PlayerLook : MonoBehaviour
     private readonly string zoomAxisName = "Mouse ScrollWheel";
 
     private float freeLookReturnLerpT;
-    private Vector3 initialFreeLookAngles;
-    private Vector2 finalFreeLookAngles;
+    private Quaternion initialFreeLookRotation;
+    private Quaternion finalFreeLookRotation;
 
     private float initialDistanceFromPoint;
     private float currZoomDistance;
@@ -132,12 +132,14 @@ public class PlayerLook : MonoBehaviour
         this.thirdPersonCamera.transform.localPosition = 
             this.CalculateThirdPersonPos(Quaternion.Euler(this.targetThirdPersonCameraAngles));
 
-        // Switch
+        // Switch views
         this.currentView = (this.currentView == View.FirstPerson) ? View.ThirdPerson : View.FirstPerson;
+
         this.currentCamera = (this.currentView == View.FirstPerson) ?
             this.firstPersonCamera : this.thirdPersonCamera;
         this.firstPersonCamera.gameObject.SetActive(this.currentView == View.FirstPerson);
         this.thirdPersonCamera.gameObject.SetActive(this.currentView == View.ThirdPerson);
+
         this.changeViewCallback.Invoke(this.currentView);
     }
 
@@ -187,8 +189,7 @@ public class PlayerLook : MonoBehaviour
 
         Quaternion newRotation = Quaternion.Euler(this.targetThirdPersonCameraAngles);
 
-//!!!!TODO: the lerp is doing the quickest route which does weird stuff, I need to get rid of all Quaternion Lerps.. but Im not doing that on First person? unless it's not using that?
-        this.thirdPersonCamera.transform.localRotation = Quaternion.Slerp(this.thirdPersonCamera.transform.localRotation,
+        this.thirdPersonCamera.transform.localRotation = Quaternion.Lerp(this.thirdPersonCamera.transform.localRotation,
             newRotation, this.thirdPersonLerpMultiplier * Time.deltaTime);
 
         this.thirdPersonCamera.transform.localPosition = Vector3.Lerp(this.thirdPersonCamera.transform.localPosition,
@@ -210,7 +211,7 @@ public class PlayerLook : MonoBehaviour
     {
         // Start FreeLooking.
         if(Input.GetButtonDown(this.freeLookButtonName))
-            this.initialFreeLookAngles = camera.transform.localRotation.eulerAngles;
+            this.initialFreeLookRotation = camera.transform.localRotation;
 
         // Actively FreeLooking.
         this.isFreeLooking = Input.GetButton(this.freeLookButtonName);
@@ -226,7 +227,7 @@ public class PlayerLook : MonoBehaviour
         if(Input.GetButtonUp(this.freeLookButtonName))
         {
             this.shouldReturnFromFreeLook = true;
-            this.finalFreeLookAngles = camera.transform.localRotation.eulerAngles;
+            this.finalFreeLookRotation = camera.transform.localRotation;
             this.freeLookReturnLerpT = 0.0f;
         }
 
@@ -262,17 +263,19 @@ public class PlayerLook : MonoBehaviour
 
     private void HandleFreeLookReturn(Camera camera)
     {
-        float duration = (this.currentView == View.FirstPerson) ?  this.timeToResetFromFreeLook : this.timeToResetFromFreeLookThirdPerson;
-        this.freeLookReturnLerpT = Mathf.Clamp(
-            this.freeLookReturnLerpT + (Time.deltaTime / duration), 0.0f, 1.0f);
+        float duration = (this.currentView == View.FirstPerson) ?
+            this.timeToResetFromFreeLook : this.timeToResetFromFreeLookThirdPerson;
+        
+        this.freeLookReturnLerpT = Mathf.Clamp(this.freeLookReturnLerpT +
+            (Time.deltaTime / duration), 0.0f, 1.0f);
 
-        Vector3 newRotationAngles = Vector3.Lerp(this.finalFreeLookAngles,
-            this.initialFreeLookAngles, this.freeLookReturnLerpT);
+        Quaternion newRotation = Quaternion.Lerp(this.finalFreeLookRotation,
+            initialFreeLookRotation, this.freeLookReturnLerpT);
 
         if (this.currentView == View.FirstPerson)
-            camera.transform.localRotation = Quaternion.Euler(newRotationAngles);
+            camera.transform.localRotation = newRotation;
         else
-            this.targetThirdPersonCameraAngles = newRotationAngles;
+            this.targetThirdPersonCameraAngles = newRotation.eulerAngles;
 
         if(this.freeLookReturnLerpT == 1.0f)
             this.shouldReturnFromFreeLook = false;
