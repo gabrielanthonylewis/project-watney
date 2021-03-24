@@ -20,7 +20,7 @@ public class PlayerInteract : NetworkBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
-            Transform cameraTransform = this.playerLook.currentCamera.transform;
+            Transform cameraTransform = this.playerLook.GetCurrentCamera().transform;
             float rayDistance = (this.playerLook.currentView == PlayerLook.View.FirstPerson)
                 ? this.firstPersonRayDistance : this.thirdPersonRayDistance;
 
@@ -97,7 +97,7 @@ public class PlayerInteract : NetworkBehaviour
     #region Pickup
     private void PickupMoveable(GameObject moveableObj, GameObject interactor)
     {
-        moveableObj.GetComponent<Moveable>().Pickup(interactor.GetComponent<PlayerLook>().currentCamera.transform,
+        moveableObj.GetComponent<Moveable>().Pickup(interactor.GetComponent<PlayerLook>().GetCurrentCamera().transform,
             Vector3.zero, true, true, interactor.GetComponent<PlayerInteract>().OnMoveablePickedUpByOther);
     }
 

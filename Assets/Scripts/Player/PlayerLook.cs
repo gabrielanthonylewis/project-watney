@@ -8,11 +8,6 @@ public class PlayerLook : MonoBehaviour
         ThirdPerson = 1
     }
 
-    public View currentView = View.FirstPerson;
-    public Camera currentCamera;
-    public bool isFreeLooking = false;
-    public bool shouldReturnFromFreeLook = false;
-
     public delegate void ChangeViewDelegate(View newView);
     protected ChangeViewDelegate changeViewCallback;
     
@@ -43,20 +38,19 @@ public class PlayerLook : MonoBehaviour
     private float freeLookReturnLerpT;
     private Quaternion initialFreeLookRotation;
     private Quaternion finalFreeLookRotation;
+    private bool isFreeLooking = false;
+    private bool shouldReturnFromFreeLook = false;
 
     private float initialDistanceFromPoint;
     private float currZoomDistance;
     
+    public View currentView = View.FirstPerson;
+    private Camera currentCamera;
     private Vector3 targetThirdPersonCameraAngles;
     
     private float adjustmentDistance = -8.0f; // Camera distance will change if there is a collision.
     private Vector3 desiredCameraPosition = Vector3.zero; // Where the normal camera is meant to be (destination)
     private Vector3 adjustedCameraPosition = Vector3.zero; // If colliding use this Camera position, otherwise use normal destination (adjustedDestination)
-
-    public void AddChangeViewCallback(ChangeViewDelegate myCallback)
-    {
-        this.changeViewCallback += myCallback;
-    }
 
     private void Start()
     {
@@ -125,14 +119,14 @@ public class PlayerLook : MonoBehaviour
 
     private void SwitchView()
     {
-        // Reset
+        // Reset.
         this.currentCamera.transform.localRotation = Quaternion.Euler(Vector3.zero);
         this.currZoomDistance = this.initialDistanceFromPoint;
         this.targetThirdPersonCameraAngles = Vector3.zero;
         this.thirdPersonCamera.transform.localPosition = 
             this.CalculateThirdPersonPos(Quaternion.Euler(this.targetThirdPersonCameraAngles));
 
-        // Switch views
+        // Switch views.
         this.currentView = (this.currentView == View.FirstPerson) ? View.ThirdPerson : View.FirstPerson;
 
         this.currentCamera = (this.currentView == View.FirstPerson) ?
@@ -279,5 +273,20 @@ public class PlayerLook : MonoBehaviour
 
         if(this.freeLookReturnLerpT == 1.0f)
             this.shouldReturnFromFreeLook = false;
+    }
+
+    public void AddChangeViewCallback(ChangeViewDelegate myCallback)
+    {
+        this.changeViewCallback += myCallback;
+    }
+
+    public bool IsFreeLookActive()
+    {
+        return (this.isFreeLooking || this.shouldReturnFromFreeLook);
+    }
+
+    public Camera GetCurrentCamera()
+    {
+        return this.currentCamera;
     }
 }

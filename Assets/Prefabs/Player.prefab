@@ -2687,10 +2687,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 316a8a434f1bf76429982013e1c3a06c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentView: 0
-  currentCamera: {fileID: 0}
-  isFreeLooking: 0
-  shouldReturnFromFreeLook: 0
   horizontalSpeedMultiplier: 125
   verticalSpeedMultiplier: 125
   firstPersonLimitsPitch: {x: -82, y: 82}
@@ -2714,6 +2710,7 @@ MonoBehaviour:
   drawDesiredCollisionLines: 0
   drawAdjustedCollisionLines: 0
   safteyDistance: 1
+  currentView: 0
 --- !u!114 &54249169
 MonoBehaviour:
   m_ObjectHideFlags: 0
