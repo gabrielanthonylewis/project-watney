@@ -78,7 +78,7 @@ public class PlayerInteract : NetworkBehaviour
 
         ButtonInteraction button = sceneObject.GetComponent<ButtonInteraction>();
         if(button != null)
-            button.Interact();
+            button.Interact(interactor);
     }
 
     [Command]

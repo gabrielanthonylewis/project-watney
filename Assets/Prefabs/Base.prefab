@@ -2103,6 +2103,7 @@ MonoBehaviour:
   insideButton: {fileID: 294286268}
   outsideButton: {fileID: 702271239}
   secondsToOpen: 3
+  playerTag: Player
 --- !u!65 &1037862649
 BoxCollider:
   m_ObjectHideFlags: 0

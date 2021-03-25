@@ -62,7 +62,7 @@ public class PlayerStats : MonoBehaviour
         if(this.isDead)
             return;
 
-        bool isInside = this.baseAirlock.IsPlayerInside();
+        bool isInside = this.baseAirlock.IsPlayerInside(this.gameObject);
         if(isInside != this.isInside)
             this.SetIsInside(isInside);
 
